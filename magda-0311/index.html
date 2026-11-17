@@ -78,6 +78,12 @@ th{color:var(--brand);font-weight:600}
 .tn p,.tn li{font-size:14px}
 .badge{display:inline-block;background:var(--soft);color:var(--brand);border-radius:6px;padding:0 7px;font-size:12px;font-weight:600}
 .note{font-size:13px;color:var(--warn);margin-top:6px}
+.oral{margin-left:auto;font-size:12px;font-weight:500;color:var(--muted);display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;background:var(--soft2);border:1px solid var(--line);border-radius:20px;padding:3px 10px}
+.oral input{accent-color:var(--ok);margin:0}
+.card.closed{background:var(--okbg);border-color:#B9DFC6}
+.card.closed>*:not(h2){display:none}
+.card.closed h2{margin:0}
+.card.closed .oral{color:var(--ok);font-weight:600;border-color:var(--ok);background:#fff}
 @media(max-width:640px){.selrow{grid-template-columns:1fr}.player{top:0;position:relative}nav{top:0;position:relative}header{position:relative}}
 </style>
 </head>
@@ -288,11 +294,11 @@ function rng(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Ma
 function shuffle(arr,seed){const a=arr.slice(),r=rng(seed);for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
 /* ---------- state + persistence + live sync ---------- */
-const KEY='magda-0311-l2l3';
-let S={};try{S=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){S={}}
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const qs=new URLSearchParams(location.search);
 const ROOM=(qs.get('sala')||'').replace(/[^a-zA-Z0-9_-]/g,'');
+const KEY='magda-0311-l2l3'+(ROOM?'-'+ROOM:'');
+let S={};try{S=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){S={}}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const LIVE=!!(FIREBASE_DB_URL && FIREBASE_DB_URL.indexOf('__')!==0 && ROOM);
 const TEACHER=qs.get('prof')==='1';
 const BASE=LIVE?FIREBASE_DB_URL.replace(/\/$/,'')+'/aulas/'+ROOM+'/s':'';
@@ -355,7 +361,15 @@ function scoreLine(el,c,t){el.textContent=`${c} / ${t} correct`}
 let stepNo=0;
 function card(st,L){const c=document.createElement('div');c.className='card'+(st.type==='entenda'?' entenda':'');
   if(st.type!=='entenda')stepNo++;
-  c.innerHTML=`<h2>${st.type==='entenda'?'💡':`<span class="num">${stepNo}</span>`}${esc(st.title)}</h2>`+(st.instr?`<p class="instr">${esc(st.instr)}</p>`:'');return c}
+  c.innerHTML=`<h2>${st.type==='entenda'?'💡':`<span class="num">${stepNo}</span>`}${esc(st.title)}</h2>`+(st.instr?`<p class="instr">${esc(st.instr)}</p>`:'');
+  if(st.type!=='entenda')oralBox(c,st);return c}
+function oralBox(c,st){const k='oral:'+st.id;const canMark=!LIVE||TEACHER;
+  const w=document.createElement('label');w.className='oral';
+  w.innerHTML=`<input type="checkbox"${canMark?'':' disabled'}> <span>Done orally (speaking)</span>`;
+  const cb=$('input',w);c.querySelector('h2').appendChild(w);
+  const apply=v=>{cb.checked=!!v;c.classList.toggle('closed',!!v);$('span',w).textContent=v?'✓ Done orally (speaking)':'Done orally (speaking)'};
+  cb.onchange=()=>{set(k,cb.checked);apply(cb.checked)};
+  handlers.push((kk,v)=>{if(kk===k)apply(v)});setTimeout(()=>apply(S[k]))}
 function actions(c,sid,{check,show,extra}={}){const d=document.createElement('div');d.className='actions';
   if(check){const b=document.createElement('button');b.className='pbtn';b.textContent='Check';b.onclick=()=>{check(false);set('chk:'+sid,Date.now()+Math.random())};d.appendChild(b);handlers.push((k)=>{if(k==='chk:'+sid)check(true)})}
   if(show&&(!LIVE||TEACHER)){const b=document.createElement('button');b.className='pbtn ghost';b.textContent='Show answers';b.onclick=()=>{show();set('show:'+sid,Date.now()+Math.random())};d.appendChild(b)}
@@ -433,7 +447,7 @@ const rp=document.createElement('section');rp.className='pane';rp.id='p-results'
 const scored=['gaps','select','choice'];
 function renderResults(){let html='<h1>Results</h1><div class="sub">Score of the first attempt in each auto-corrected step.</div>';let C=0,T=0;
   LESSONS.forEach(L=>{let n=0;html+=`<div class="card"><h2>${esc(L.title)}</h2><table><tr><th>Step</th><th>First attempt</th></tr>`;
-    L.steps.forEach(st=>{if(st.type!=='entenda')n++;if(!scored.includes(st.type))return;const f=S['fs:'+st.id];if(f){C+=f.c;T+=f.t}html+=`<tr><td>${n}. ${esc(st.title)}</td><td>${f?`<b>${f.c} / ${f.t}</b> (${Math.round(f.c/f.t*100)}%)`:'<span style="color:var(--muted)">not done yet</span>'}</td></tr>`});html+='</table></div>'});
+    L.steps.forEach(st=>{if(st.type!=='entenda')n++;if(st.type==='entenda')return;const oral=S['oral:'+st.id];if(!scored.includes(st.type)){if(oral)html+=`<tr><td>${n}. ${esc(st.title)}</td><td><span class="badge">✓ done orally</span></td></tr>`;return}const f=S['fs:'+st.id];if(f&&!oral){C+=f.c;T+=f.t}html+=`<tr><td>${n}. ${esc(st.title)}</td><td>${oral?'<span class="badge">✓ done orally</span>':f?`<b>${f.c} / ${f.t}</b> (${Math.round(f.c/f.t*100)}%)`:'<span style="color:var(--muted)">not done yet</span>'}</td></tr>`});html+='</table></div>'});
   html+=`<div class="card"><h2>Total</h2><p style="font-size:20px;margin:4px 0"><b>${C} / ${T}</b>${T?` · ${Math.round(C/T*100)}%`:''}</p>
   <div class="actions"><button class="pbtn" id="copy">Copy all answers (for the Online Notebook)</button><button class="pbtn ghost" id="reset">Start again</button><span class="score" id="cmsg"></span></div></div>`;
   rp.innerHTML=html;
@@ -443,7 +457,7 @@ function renderResults(){let html='<h1>Results</h1><div class="sub">Score of the
 function confirmReset(){const b=$('#reset');if(b.dataset.sure){return true}b.dataset.sure=1;b.textContent='Click again to erase everything';setTimeout(()=>{b.dataset.sure='';b.textContent='Start again'},3000);return false}
 function summary(){let out='Magda – Listening Lab – 03/11 (Lessons 2 & 3)\n';
   LESSONS.forEach(L=>{let n=0;out+='\n=== '+L.title+' ('+L.track+') ===\n';
-    L.steps.forEach(st=>{if(st.type==='entenda')return;n++;out+='\n'+n+'. '+st.title+'\n';const f=S['fs:'+st.id];if(f)out+='   First attempt: '+f.c+'/'+f.t+'\n';
+    L.steps.forEach(st=>{if(st.type==='entenda')return;n++;out+='\n'+n+'. '+st.title+(S['oral:'+st.id]?' – DONE ORALLY (speaking)':'')+'\n';const f=S['fs:'+st.id];if(f)out+='   First attempt: '+f.c+'/'+f.t+'\n';
       if(st.type==='gaps')st.items.forEach(([t,a],i)=>{let bi=0;out+='   '+(i+1)+'. '+t.replace(/___/g,()=>'['+(S[st.id+':'+i+':'+(bi++)]||'')+']')+'\n'});
       else if(st.type==='select')st.items.forEach(([q],i)=>out+='   '+(i+1)+'. '+q+' → '+(S[st.id+':'+i]||'')+'\n');
       else if(st.type==='choice')st.items.forEach((p,i)=>out+='   '+(i+1)+'. '+(S[st.id+':'+i]||'')+'\n');
