@@ -158,7 +158,7 @@ const WORDS = [
   {w:'sea',em:'⛵',pt:'mar',ex:'The Mediterranean Sea is between Europe and Africa.'}]}
 ];
 
-const LABELS = ['Nature','Where is it?','Population','Language','Money','Flag','Capital city'];
+const LABELS = ['Nature','Where is it?','Population','Money','Flag','Language','Capital city'];
 const COUNTRIES = [
  {n:'Italy',c:['It has high mountains in the north, some volcanoes, and two big islands.','It’s in the south of Europe, on the Mediterranean Sea.','The population is about 59 million people.','People speak Italian.','The money is the euro.','The flag is green, white and red.','The capital city is Rome.']},
  {n:'Japan',c:['It’s made of thousands of islands. Its highest mountain is a famous volcano: 3,776 meters high.','It’s in the east of Asia, in the Pacific Ocean.','The population is about 124 million people.','People speak Japanese.','The money is the yen.','The flag is white with a red circle.','The capital city is Tokyo.']},
@@ -171,6 +171,8 @@ const COUNTRIES = [
  {n:'China',c:['The longest river in Asia is here, and part of the highest mountain in the world too.','It’s in the east of Asia. It’s one of the biggest countries in the world.','The population is about 1.4 billion people (1,400 million!).','Most people speak Chinese (Mandarin).','The money is the yuan.','The flag is red with yellow stars.','The capital city is Beijing.']},
  {n:'the UK',c:['It’s a country on islands, between the Atlantic Ocean and the North Sea.','It’s in the north-west of Europe.','The population is about 69 million people.','People speak English.','The money is the pound.','The flag is red, white and blue.','The capital city is London.']}
 ];
+// clue order: nature, where, population, money, flag, language, capital city
+COUNTRIES.forEach(c=>{ c.c=[0,1,2,4,5,3,6].map(i=>c.c[i]); });
 const OPTIONS = ['Argentina','Australia','Brazil','Canada','Chile','China','Egypt','France','Germany','India','Ireland','Italy','Japan','Mexico','New Zealand','Portugal','South Africa','Spain','the UK','the USA'];
 
 const AFRICA_IDS = '012 024 204 072 854 108 120 140 148 178 180 384 262 818 226 232 748 231 266 270 288 324 624 404 426 430 434 450 454 466 478 504 508 516 562 566 646 728 686 694 706 710 729 834 768 788 800 732 894 716'.split(' ');
@@ -481,7 +483,7 @@ function hostNotes(){
   <tr><td><b>10 min</b></td><td><b>Homework</b>: give out the “What’s special about…?” worksheet and help each student choose a different country.</td></tr></table>
   <h3 style="margin-top:16px">How to use</h3>
   <p>• <b>Teacher (TV):</b> this page with <code>?prof=1&amp;sala=${esc(SALA)}</code>. • <b>Students (phones):</b> the link or QR code on the Mystery Country and World Explorer tabs. • Use a different room name (<code>sala</code>) for each class. • Students need internet; the game works on any phone browser, with no account.</p>
-  <h3 style="margin-top:16px">Mystery Country · the countries</h3><table class="k"><tr><th>Country</th><th>Capital</th><th>Language</th><th>Money</th></tr>${COUNTRIES.map(c=>`<tr><td>${esc(c.n)}</td><td>${esc(c.c[6].replace('The capital city is ','').replace(/\.$/,''))}</td><td>${esc(c.c[3].replace(/^(Most )?[Pp]eople speak /,'').replace(/\.$/,''))}</td><td>${esc(c.c[4].replace('The money is the ','').replace(/\.$/,''))}</td></tr>`).join('')}</table>
+  <h3 style="margin-top:16px">Mystery Country · the countries</h3><table class="k"><tr><th>Country</th><th>Capital</th><th>Language</th><th>Money</th></tr>${COUNTRIES.map(c=>`<tr><td>${esc(c.n)}</td><td>${esc(c.c[6].replace('The capital city is ','').replace(/\.$/,''))}</td><td>${esc(c.c[5].replace(/^(Most )?[Pp]eople speak /,'').replace(/\.$/,''))}</td><td>${esc(c.c[3].replace('The money is the ','').replace(/\.$/,''))}</td></tr>`).join('')}</table>
   <p class="mut" style="margin-top:6px">Populations are rounded recent estimates. The answer options include “distractors” with similar flags or languages (Ireland, Spain, Chile, India…).</p>
   <h3 style="margin-top:16px">World Explorer · answer key</h3><table class="k">${MISSIONS.map((m,i)=>`<tr><td style="width:30px"><b>${i+1}</b></td><td>${esc(m.q)}</td><td style="width:200px;color:var(--ok);font-weight:500">${esc(m.a)}</td></tr>`).join('')}</table></div>`;
 }
