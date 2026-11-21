@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Spell It! · Kids 8 · Educa&amp;Cia</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--p:#583F84;--p2:#7a5fae;--pl:#f1edf8;--or:#E0703A;--ok:#2e9b6a;--bad:#d1495b;--ink:#2b2b33;--mut:#8a7fa0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:Poppins,system-ui,sans-serif;background:#f7f5fb;color:var(--ink);min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+.top{background:#fff;border-bottom:1px solid #ece7f3;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:5}
+.logo{display:flex;align-items:center;gap:8px}.logo .li{height:38px}.logo .lw{height:17px;display:block}.tv~* .logo .li{height:50px}
+.logo small{display:block;font-size:10px;color:var(--mut);font-weight:500;letter-spacing:1px;text-transform:uppercase;margin-top:3px}
+.pill{background:var(--pl);color:var(--p);border-radius:20px;padding:4px 12px;font-weight:600;font-size:14px;white-space:nowrap}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+.card{background:#fff;border-radius:20px;padding:18px;box-shadow:0 2px 10px rgba(88,63,132,.07);margin-bottom:14px}
+h1{font-size:24px;margin:0 0 6px;color:var(--p)}h2{font-size:19px;margin:0 0 8px;color:var(--p)}
+.mut{color:var(--mut);font-size:14px}
+.btn{background:var(--p);color:#fff;border:0;border-radius:14px;padding:13px 18px;font-size:16px;font-weight:600;width:100%}
+.btn.sec{background:var(--pl);color:var(--p)}.btn.or{background:var(--or)}.btn.sm{width:auto;padding:8px 14px;font-size:14px;border-radius:10px}
+.btn:disabled{opacity:.45}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.names button{background:var(--pl);border:2px solid transparent;border-radius:14px;padding:12px 6px;font-size:15px;font-weight:600;color:var(--p)}
+.names button.sel{border-color:var(--p);background:#fff}
+input.ans,input.pin{width:100%;font-size:22px;font-family:inherit;padding:12px 14px;border:2px solid #d6cde6;border-radius:14px;outline:none;text-align:center;letter-spacing:.5px}
+input.ans:focus,input.pin:focus{border-color:var(--p)}
+.stage-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.lvl{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--or)}
+.bar{height:8px;background:#ece7f3;border-radius:8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--p);border-radius:8px;transition:width .3s}
+.prompt{text-align:center;padding:10px 0 14px}
+.emo{font-size:68px;line-height:1.1}
+.ptext{font-size:19px;font-weight:600;margin-top:6px}
+.hint{font-size:28px;font-weight:700;letter-spacing:4px;color:var(--p);margin-top:6px;font-family:ui-monospace,monospace}
+.opts{display:grid;gap:10px}
+.opts button{background:#fff;border:2px solid #e2dbef;border-radius:14px;padding:14px;font-size:18px;font-weight:600;color:var(--ink)}
+.opts.g2{grid-template-columns:1fr 1fr}
+.opts button.ok{background:#e4f5ec;border-color:var(--ok)}.opts button.bad{background:#fbe6e9;border-color:var(--bad)}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
+.tiles button{width:46px;height:50px;border-radius:12px;border:0;background:var(--pl);color:var(--p);font-size:22px;font-weight:700}
+.tiles button.used{visibility:hidden}
+.built{min-height:56px;border:2px dashed #d6cde6;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;letter-spacing:3px;color:var(--p);padding:6px}
+.row{display:flex;gap:8px;margin-top:10px}
+.fb{margin-top:12px;border-radius:14px;padding:12px;font-weight:600;text-align:center}
+.fb.ok{background:#e4f5ec;color:#1d6e4a}.fb.bad{background:#fbe6e9;color:#9d2537}.fb.half{background:#fff3e2;color:#9a5a00}
+.fb .cw{font-size:24px;letter-spacing:1px;margin-top:4px}.fb .cw u{color:var(--bad);text-decoration:none;border-bottom:3px solid var(--bad)}
+.words{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;font-size:20px;margin:6px 0 12px}
+.words button{border:2px solid #e2dbef;background:#fff;border-radius:12px;padding:8px 12px;font-size:19px;font-family:inherit}
+.words button.sel{border-color:var(--or);background:#fff3ea}
+.ticket{background:#fffdf6;border:2px dashed #e5c98f;border-radius:16px;padding:12px}
+.titem{display:flex;align-items:center;gap:10px;margin:8px 0}.titem .e{font-size:34px;min-width:84px;text-align:center}
+.titem input{flex:1;min-width:0;width:100%;font-size:19px;font-family:inherit;padding:10px;border:2px solid #d6cde6;border-radius:12px;outline:none}
+.titem input.ok{border-color:var(--ok);background:#e4f5ec}.titem input.bad{border-color:var(--bad);background:#fbe6e9}
+.wait{text-align:center;padding:30px 10px}.wait .big{font-size:56px}
+.rankme{font-size:40px;font-weight:700;color:var(--p)}
+.timer{height:6px;background:#ece7f3;border-radius:6px;overflow:hidden;margin-bottom:10px}.timer i{display:block;height:100%;background:var(--or);width:100%}
+.badge{display:inline-block;background:#fff3ea;color:var(--or);border-radius:20px;padding:4px 12px;font-weight:700;font-size:13px;margin:3px}
+.spk{border:0;background:var(--pl);color:var(--p);border-radius:50%;width:44px;height:44px;font-size:20px;margin-top:6px}
+/* TV */
+.tv{max-width:none;padding:24px 34px}
+.tvgrid{display:grid;grid-template-columns:1.25fr 1fr;gap:24px}
+.tvt{font-size:46px;font-weight:700;color:var(--p);margin:0}.tvs{font-size:22px;color:var(--mut)}
+.prow{display:grid;grid-template-columns:170px 1fr 60px;align-items:center;gap:12px;margin:10px 0;font-size:22px;font-weight:600}
+.prow .bar{height:18px}.prow .done{color:var(--ok)}
+.podium{display:flex;flex-direction:column;gap:10px}
+.pod{display:flex;align-items:center;gap:14px;background:#fff;border-radius:18px;padding:14px 18px;font-size:28px;font-weight:700}
+.pod .m{font-size:34px}.pod .s{margin-left:auto;color:var(--p)}
+.sdq{text-align:center}.sdq .emo{font-size:150px}.sdq .ptext{font-size:40px}
+.cnt{font-size:30px;font-weight:700;color:var(--or)}
+.qrbox{background:#fff;border-radius:22px;padding:14px;width:330px;height:330px;flex:none}.qrbox svg,.qrmini svg{width:100%;height:100%}
+.qrmini{display:flex;align-items:center;gap:14px;margin-top:18px;background:#fff;border-radius:16px;padding:10px;font-size:16px;color:var(--mut)}.qrmini svg{width:110px;height:110px;flex:none}
+.join{font-size:20px;background:#fff;border-radius:16px;padding:12px 16px;display:inline-block}
+/* control */
+.ctl{max-width:820px}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sgrid button{border:2px solid #e2dbef;background:#fff;border-radius:14px;padding:12px 8px;font-weight:600;font-size:14px;color:var(--ink)}
+.sgrid button.cur{border-color:var(--p);background:var(--pl);color:var(--p)}
+table.pl{width:100%;border-collapse:collapse;font-size:14px}.pl td,.pl th{padding:6px;border-bottom:1px solid #eee;text-align:left}
+.miss{display:flex;flex-wrap:wrap;gap:8px}.miss span{background:#fbe6e9;color:#9d2537;border-radius:12px;padding:6px 12px;font-weight:700;font-size:18px}
+.confirm{position:fixed;inset:0;background:rgba(30,20,50,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+.confirm .card{max-width:380px;width:100%}
+textarea{width:100%;min-height:150px;font-family:inherit;font-size:15px;border:2px solid #d6cde6;border-radius:12px;padding:10px}
+.net{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);background:#333;color:#fff;border-radius:20px;padding:6px 14px;font-size:13px;display:none;z-index:60}
+@media(max-width:380px){.emo{font-size:56px}.opts button{font-size:16px}.tiles button{width:40px;height:46px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="net" id="net">Reconnecting… your answers are saved.</div>
+<script>
+/* ================= CONFIG ================= */
+const DB = 'https://educaecia-aulas-default-rtdb.firebaseio.com';
+const Q = new URLSearchParams(location.search);
+const SALA = (Q.get('sala') || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+const MODE = Q.get('prof') ? 'prof' : Q.get('tv') ? 'tv' : 'student';
+const BASE = location.origin + location.pathname;
+
+/* ================= CONTENT ================= */
+// item types: choose | type | tiles | ticket | fix
+const C = (emoji, text) => ({ emoji, text });
+const STAGES = [
+ { key: 'intro', title: 'Introduction', game: 'Warm-up Grid', sub: 'All units · tap the right word', timed: 15, items: [
+  { t: 'choose', lv: 1, p: C('🔑', ''), a: 'key', o: ['key', 'bag', 'watch', 'wallet'] },
+  { t: 'choose', lv: 1, p: C('⌚', ''), a: 'watch', o: ['watch', 'key', 'bike', 'laptop'] },
+  { t: 'choose', lv: 1, p: C('🎸', ''), a: 'guitar', o: ['guitar', 'skateboard', 'laptop', 'bag'] },
+  { t: 'choose', lv: 1, p: C('', 'the day after Monday'), a: 'Tuesday', o: ['Tuesday', 'Thursday', 'Sunday', 'Wednesday'] },
+  { t: 'choose', lv: 1, p: C('👵', 'your mom\'s mother'), a: 'grandmother', o: ['grandmother', 'aunt', 'cousin', 'daughter'] },
+  { t: 'choose', lv: 1, p: C('🇯🇵', 'a person from Japan'), a: 'Japanese', o: ['Japanese', 'Polish', 'French', 'Irish'] },
+  { t: 'choose', lv: 1, p: C('', 'He tells great jokes. He\'s…'), a: 'funny', o: ['funny', 'quiet', 'nervous', 'tall'] },
+  { t: 'choose', lv: 1, p: C('🥕', ''), a: 'carrot', o: ['carrot', 'tomato', 'banana', 'apple'] },
+  { t: 'choose', lv: 1, p: C('🍪', ''), a: 'cookie', o: ['cookie', 'cake', 'bread', 'cheese'] },
+  { t: 'choose', lv: 1, p: C('🥛', ''), a: 'milk', o: ['milk', 'water', 'tea', 'orange juice'] },
+  { t: 'choose', lv: 1, p: C('🚿', ''), a: 'have a shower', o: ['have a shower', 'go to bed', 'do homework', 'get up'] },
+  { t: 'choose', lv: 1, p: C('📚', ''), a: 'do homework', o: ['do homework', 'have lunch', 'go home', 'wake up'] },
+ ]},
+ { key: 'welcome', title: 'Welcome Unit', game: 'Clock & Calendar Rush', sub: 'Possessions · numbers · days · months · time', items: [
+  { t: 'choose', lv: 1, p: { clock: [7, 15] }, a: 'quarter past seven', o: ['quarter past seven', 'quarter to seven', 'half past seven'] },
+  { t: 'choose', lv: 1, p: { clock: [3, 30] }, a: 'half past three', o: ['half past three', 'half past six', 'quarter past three'] },
+  { t: 'choose', lv: 1, p: C('', '12th'), a: 'twelfth', o: ['twelfth', 'twelveth', 'twelvth'] },
+  { t: 'choose', lv: 1, p: C('', 'the month after January'), a: 'February', o: ['February', 'Febuary', 'Februery'] },
+  { t: 'type', lv: 2, p: C('', 'the day after Tuesday'), h: 'W _ D N _ S D A Y', a: 'Wednesday', cap: 1 },
+  { t: 'type', lv: 2, p: C('', '8th'), h: 'E I G _ T H', a: 'eighth' },
+  { t: 'type', lv: 2, p: C('', '40'), h: 'F O _ T Y', a: 'forty' },
+  { t: 'type', lv: 2, p: C('', 'the day after Wednesday'), h: 'T H _ R S D _ Y', a: 'Thursday', cap: 1 },
+  { t: 'type', lv: 3, p: { clock: [8, 45] }, a: 'quarter to nine', alt: ['a quarter to nine', 'eight forty-five', 'eight forty five'] },
+  { t: 'type', lv: 3, p: C('', '9th'), a: 'ninth' },
+  { t: 'type', lv: 3, p: C('', '5th'), a: 'fifth' },
+  { t: 'type', lv: 3, p: C('', '20th'), a: 'twentieth' },
+  { t: 'type', lv: 3, p: C('', 'Write the date in words: May 3rd'), a: 'May third', alt: ['the third of May', 'third of May', 'May the third'], cap: 1 },
+ ]},
+ { key: 'unit1', title: 'Unit 1', game: 'Passport Control', sub: 'Family · nationalities · adjectives', items: [
+  { t: 'choose', lv: 1, p: C('🇯🇵', 'Japan → nationality'), a: 'Japanese', o: ['Japanese', 'Japanes', 'Japonese'] },
+  { t: 'choose', lv: 1, p: C('🇧🇷', 'Brazil → nationality'), a: 'Brazilian', o: ['Brazilian', 'Brasilian', 'Brazillian'] },
+  { t: 'choose', lv: 1, p: C('', 'your mom\'s sister'), a: 'aunt', o: ['aunt', 'ant', 'aunte'] },
+  { t: 'choose', lv: 1, p: C('', 'your aunt\'s son or daughter'), a: 'cousin', o: ['cousin', 'cousen', 'cosin'] },
+  { t: 'tiles', lv: 2, p: C('👧', 'Ana is Lucy\'s…'), a: 'daughter' },
+  { t: 'tiles', lv: 2, p: C('😊', 'She has a lot of friends. She\'s…'), a: 'friendly' },
+  { t: 'tiles', lv: 2, p: C('😬', 'I can\'t sleep before an exam. I\'m…'), a: 'nervous' },
+  { t: 'tiles', lv: 2, p: C('🇮🇹', 'Italy → nationality'), a: 'Italian', cap: 1 },
+  { t: 'type', lv: 3, p: C('🇫🇷', 'France → nationality'), a: 'French', cap: 1 },
+  { t: 'type', lv: 3, p: C('🇩🇪', 'Germany → nationality'), a: 'German', cap: 1 },
+  { t: 'type', lv: 3, p: C('🇵🇱', 'Poland → nationality'), a: 'Polish', cap: 1 },
+  { t: 'type', lv: 3, p: C('', 'England → nationality'), a: 'English', cap: 1 },
+  { t: 'type', lv: 3, p: C('🤫', 'He doesn\'t talk a lot. He\'s q…'), a: 'quiet' },
+  { t: 'type', lv: 3, p: C('', 'Mark is Lucy\'s husband. Lucy is Mark\'s…'), a: 'wife' },
+  { t: 'type', lv: 3, p: C('🦸', 'She isn\'t afraid of anything. She\'s b…'), a: 'brave' },
+ ]},
+ { key: 'unit2', title: 'Unit 2', game: 'Café Order Up!', sub: 'Food and drink · at the café', items: [
+  { t: 'choose', lv: 1, p: C('🍫', ''), a: 'chocolate', o: ['chocolate', 'choclate', 'chocolat'] },
+  { t: 'choose', lv: 1, p: C('🥪', ''), a: 'sandwich', o: ['sandwich', 'sandwitch', 'sanduich'] },
+  { t: 'choose', lv: 1, p: C('🍗', ''), a: 'chicken', o: ['chicken', 'chiken', 'chickin'] },
+  { t: 'choose', lv: 1, p: C('🥔 🥔', ''), a: 'potatoes', o: ['potatoes', 'potatos', 'potattoes'] },
+  { t: 'tiles', lv: 2, p: C('🥦', 'carrots, broccoli, onions are…'), a: 'vegetable', alt: ['vegetables'] },
+  { t: 'tiles', lv: 2, p: C('🥣', 'the first meal of the day'), a: 'breakfast' },
+  { t: 'tiles', lv: 2, p: C('😋', 'Mmm! It\'s…'), a: 'delicious' },
+  { t: 'tiles', lv: 2, p: C('🍅 🍅', ''), a: 'tomatoes' },
+  { t: 'ticket', lv: 3, p: C('', 'Order #1 – write the order'), its: [{ e: '🍕', a: 'pizza' }, { e: '💧', a: 'water' }] },
+  { t: 'ticket', lv: 3, p: C('', 'Order #2 – write the order'), its: [{ e: '🍔', a: 'hamburger', alt: ['burger'] }, { e: '🍟', a: 'French fries', alt: ['fries', 'french fries'] }] },
+  { t: 'ticket', lv: 3, p: C('', 'Order #3 – write the order'), its: [{ e: '🥚 🥚', a: 'eggs' }, { e: '🍞', a: 'bread' }, { e: '🥛', a: 'milk' }] },
+  { t: 'ticket', lv: 3, p: C('', 'Order #4 – write the order'), its: [{ e: '🍦', a: 'ice cream' }, { e: '🍰', a: 'cake' }, { e: '🍵', a: 'tea' }] },
+ ]},
+ { key: 'unit3', title: 'Unit 3', game: 'Fix My Day', sub: 'Daily routines · because', items: [
+  { t: 'choose', lv: 1, p: C('⏰', ''), a: 'wake up', o: ['wake up', 'go to bed', 'have lunch'] },
+  { t: 'choose', lv: 1, p: C('🚿', ''), a: 'have a shower', o: ['have a shower', 'do a shower', 'go a shower'] },
+  { t: 'choose', lv: 1, p: C('🚌', ''), a: 'go to school', o: ['go to school', 'do to school', 'have school'] },
+  { t: 'choose', lv: 1, p: C('📚', ''), a: 'do homework', o: ['do homework', 'make homework', 'go homework'] },
+  { t: 'tiles', lv: 2, p: C('🚿', 'have a…'), a: 'shower' },
+  { t: 'tiles', lv: 2, p: C('🌇', 'from 12 to 6 p.m.: the…'), a: 'afternoon' },
+  { t: 'tiles', lv: 2, p: C('', 'I ___ have lunch at home. (not always, but a lot)'), a: 'usually' },
+  { t: 'tiles', lv: 2, p: C('😴', 'I go to bed early because I\'m…'), a: 'tired' },
+  { t: 'fix', lv: 3, s: 'I always have breakfast becuse I\'m hungry.', w: 'becuse', a: 'because' },
+  { t: 'fix', lv: 3, s: 'In the evning I watch TV.', w: 'evning', a: 'evening' },
+  { t: 'fix', lv: 3, s: 'We have diner at eight o\'clock.', w: 'diner', a: 'dinner' },
+  { t: 'fix', lv: 3, s: 'My frend meets me after school.', w: 'frend', a: 'friend' },
+  { t: 'fix', lv: 3, s: 'I take a shawer every morning.', w: 'shawer', a: 'shower' },
+  { t: 'fix', lv: 3, s: 'She does her homwork in the afternoon.', w: 'homwork', a: 'homework' },
+ ]},
+ { key: 'showdown', title: 'Final', game: 'Spelling Bee Showdown', sub: 'Live on the TV · listen and spell', live: true, items: [
+  { p: C('📅', 'the day after Tuesday'), a: 'Wednesday', cap: 1 },
+  { p: C('❄️', 'the 2nd month of the year'), a: 'February', cap: 1 },
+  { p: C('8️⃣', '8th'), a: 'eighth' },
+  { p: C('👧', 'your mom and dad\'s girl'), a: 'daughter' },
+  { p: C('🇧🇷', 'a person from Brazil'), a: 'Brazilian', cap: 1 },
+  { p: C('🥪', ''), a: 'sandwich' },
+  { p: C('🍗', ''), a: 'chicken' },
+  { p: C('🥦', 'carrots and broccoli are…'), a: 'vegetables', alt: ['vegetable'] },
+  { p: C('📚', 'You do it after school.'), a: 'homework', dbl: 1 },
+  { p: C('❓', 'I wear a coat ___ it\'s cold.'), a: 'because', dbl: 1 },
+  { p: C('🥣', 'the first meal of the day'), a: 'breakfast', dbl: 1 },
+ ]},
+];
+const BONUS = [
+ { p: C('', 'the 12th: t…'), a: 'twelfth' }, { p: C('', 'your mom and dad\'s parents: g…'), a: 'grandparents' },
+ { p: C('', 'a person from Japan: J…'), a: 'Japanese', cap: 1 }, { p: C('', 'Mmm! It\'s d…'), a: 'delicious' },
+ { p: C('', 'the 2nd month: F…'), a: 'February', cap: 1 }, { p: C('', 'the 9th: n…'), a: 'ninth' },
+ { p: C('', 'after Tuesday: W…'), a: 'Wednesday', cap: 1 }, { p: C('', 'a sweet brown food: c…'), a: 'chocolate' },
+ { p: C('', 'from 6 to 10 p.m.: the e…'), a: 'evening' }, { p: C('', 'not always, but a lot: u…'), a: 'usually' },
+ { p: C('', 'a person from Ireland: I…'), a: 'Irish', cap: 1 }, { p: C('', 'your aunt\'s child: c…'), a: 'cousin' },
+];
+STAGES.forEach((s, i) => s.items.forEach((it, j) => it.id = s.key + '_' + j));
+BONUS.forEach((b, j) => { b.t = 'type'; b.id = 'bonus_' + j; });
+const SHOW = STAGES.length - 1;
+
+/* ================= HELPERS ================= */
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const slug = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const norm = s => String(s || '').replace(/[’`´]/g, "'").replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+function rng(seed) { let h = 1779033703 ^ seed.length; for (let i = 0; i < seed.length; i++) { h = Math.imul(h ^ seed.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; }; }
+function shuffle(arr, seed) { const a = arr.slice(), r = rng(seed); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+// check: returns 'ok' | 'cap' | 'bad'
+function check(input, item) {
+  const x = norm(input), list = [item.a].concat(item.alt || []);
+  for (const a of list) if (x === norm(a)) return 'ok';
+  for (const a of list) if (x.toLowerCase() === norm(a).toLowerCase()) return item.cap ? 'cap' : 'ok';
+  return 'bad';
+}
+function diffHtml(wrong, right) { // highlight letters of `right` not matched by LCS with `wrong`
+  const a = norm(wrong).toLowerCase(), b = right; const bl = b.toLowerCase();
+  const m = a.length, n = b.length, d = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) d[i][j] = a[i] === bl[j] ? d[i + 1][j + 1] + 1 : Math.max(d[i + 1][j], d[i][j + 1]);
+  let i = 0, j = 0, out = '', keep = new Set();
+  while (i < m && j < n) { if (a[i] === bl[j]) { keep.add(j); i++; j++; } else if (d[i + 1][j] >= d[i][j + 1]) i++; else j++; }
+  for (let k = 0; k < n; k++) out += keep.has(k) || b[k] === ' ' ? esc(b[k]) : '<u>' + esc(b[k]) + '</u>';
+  return out;
+}
+function say(text) { try { const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = .85; const v = speechSynthesis.getVoices().find(v => /en-US/i.test(v.lang)); if (v) u.voice = v; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { } }
+function clockSvg(h, m, size = 150) {
+  const c = size / 2; let t = '';
+  for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6, r1 = c - 8, r2 = c - (i % 3 ? 14 : 20); t += `<line x1="${c + r1 * Math.sin(a)}" y1="${c - r1 * Math.cos(a)}" x2="${c + r2 * Math.sin(a)}" y2="${c - r2 * Math.cos(a)}" stroke="#583F84" stroke-width="${i % 3 ? 2 : 4}" stroke-linecap="round"/>`; }
+  const am = m * Math.PI / 30, ah = ((h % 12) + m / 60) * Math.PI / 6;
+  const hand = (a, L, w, col) => `<line x1="${c}" y1="${c}" x2="${c + L * Math.sin(a)}" y2="${c - L * Math.cos(a)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${c}" cy="${c}" r="${c - 3}" fill="#fff" stroke="#583F84" stroke-width="4"/>${t}${hand(ah, c * .48, 7, '#333')}${hand(am, c * .72, 4.5, '#E0703A')}<circle cx="${c}" cy="${c}" r="5" fill="#333"/></svg>`;
+}
+function promptHtml(p, big) {
+  if (p.clock) return `<div class="prompt">${clockSvg(p.clock[0], p.clock[1], big ? 300 : 150)}</div>`;
+  return `<div class="prompt">${p.emoji ? `<div class="emo">${p.emoji}</div>` : ''}${p.text ? `<div class="ptext">${esc(p.text)}</div>` : ''}</div>`;
+}
+const LOGO_I='data:image/png;base64,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', LOGO_W='data:image/png;base64,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';
+const topBar = (right = '') => `<div class="top"><div class="logo"><img class="li" src="${LOGO_I}" alt=""><div><img class="lw" src="${LOGO_W}" alt="Educa&amp;Cia"><small>Spell It! · Kids 8</small></div></div>${right}</div>`;
+
+/* ================= FIREBASE (REST + SSE) ================= */
+let S = {}; // mirror of aulas/SALA
+const url = p => `${DB}/aulas/${SALA}${p ? '/' + p : ''}.json`;
+let queue = JSON.parse(localStorage.getItem('spellit_q_' + SALA) || '[]');
+function saveQ() { localStorage.setItem('spellit_q_' + SALA, JSON.stringify(queue)); }
+async function send(method, path, body) {
+  queue.push({ method, path, body }); saveQ(); flush();
+}
+let flushing = false;
+async function flush() {
+  if (flushing) return; flushing = true;
+  while (queue.length) {
+    const j = queue[0];
+    try {
+      const r = await fetch(url(j.path), { method: j.method, body: j.body === undefined ? undefined : JSON.stringify(j.body) });
+      if (!r.ok) throw 0; queue.shift(); saveQ(); $('#net').style.display = 'none';
+    } catch (e) { $('#net').style.display = 'block'; await new Promise(r => setTimeout(r, 2500)); }
+  }
+  flushing = false;
+}
+function setPath(path, data, merge) {
+  const parts = path.split('/').filter(Boolean);
+  if (!parts.length) { if (merge) S = Object.assign(S || {}, data); else S = data || {}; return; }
+  let o = S; for (let i = 0; i < parts.length - 1; i++) { if (typeof o[parts[i]] !== 'object' || o[parts[i]] === null) o[parts[i]] = {}; o = o[parts[i]]; }
+  const k = parts[parts.length - 1];
+  if (merge) { o[k] = Object.assign(typeof o[k] === 'object' && o[k] ? o[k] : {}, data); for (const x in data) if (data[x] === null) delete o[k][x]; }
+  else if (data === null) delete o[k]; else o[k] = data;
+}
+function listen(onChange) {
+  const es = new EventSource(url(''));
+  es.addEventListener('put', e => { const d = JSON.parse(e.data); setPath(d.path, d.data, false); onChange(); });
+  es.addEventListener('patch', e => { const d = JSON.parse(e.data); setPath(d.path, d.data, true); onChange(); });
+  es.onerror = () => { $('#net').style.display = 'block'; };
+  es.onopen = () => { if (!queue.length) $('#net').style.display = 'none'; };
+}
+const names = () => Object.values((S.config || {}).names || {});
+const stageNow = () => (S.config && typeof S.config.stage === 'number') ? S.config.stage : -1;
+const players = () => S.players || {};
+function ranking() { return Object.entries(players()).map(([id, p]) => ({ id, name: p.name, score: p.score || 0 })).sort((a, b) => b.score - a.score); }
+function stageItems(st, pid) {
+  const s = STAGES[st]; if (s.live) return s.items;
+  const lv = [1, 2, 3].map(l => shuffle(s.items.filter(i => i.lv === l), pid + s.key + l));
+  return [].concat(...lv);
+}
+
+function confirmBox(msg, ok) {
+  const d = document.createElement('div'); d.className = 'confirm';
+  d.innerHTML = `<div class="card"><p style="font-weight:600">${msg}</p><div class="row"><button class="btn sec" id="cn">Cancel</button><button class="btn" id="cy">Yes</button></div></div>`;
+  document.body.appendChild(d); d.querySelector('#cn').onclick = () => d.remove(); d.querySelector('#cy').onclick = () => { d.remove(); ok(); };
+}
+
+/* ================= NO ROOM ================= */
+if (!SALA) {
+  app.innerHTML = topBar() + `<div class="wrap"><div class="card"><h1>Spell It!</h1><p class="mut">Create a room for today's class (example: kids8-dec01).</p>
+  <input class="pin" id="rn" placeholder="room name" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="row"><button class="btn" id="go">Open teacher control</button></div></div></div>`;
+  $('#go').onclick = () => { const r = slug($('#rn').value); if (r) location.href = BASE + '?sala=' + r + '&prof=1'; };
+} else if (MODE === 'prof') initProf(); else if (MODE === 'tv') initTV(); else initStudent();
+
+/* ================= STUDENT ================= */
+function initStudent() {
+  let me = JSON.parse(localStorage.getItem('spellit_me_' + SALA) || 'null'); // {id,pin}
+  let pick = null, cur = { st: null, i: null, bonus: false }, lock = false, qStart = 0, sdShown = null;
+  const P = () => (me && players()[me.id]) || null;
+  listen(render);
+  function header() { const p = P(); const r = ranking().findIndex(x => x.id === me.id) + 1; return topBar(p ? `<span class="pill">${esc(p.name)} · ${p.score || 0} pts${r ? ' · #' + r : ''}</span>` : ''); }
+  function render() {
+    if (!S.config) { app.innerHTML = topBar() + `<div class="wrap"><div class="card wait"><div class="big">⏳</div><h2>Waiting for the teacher…</h2></div></div>`; return; }
+    if (!me || !P() || P().pin !== me.pin) return login();
+    const st = stageNow();
+    if (st < 0) { cur.st = null; return waitScreen('You\'re in! 🎉', 'Wait for the teacher to start the game.'); }
+    if (STAGES[st].live) return showdown();
+    const items = stageItems(st, me.id), prog = ((P().st || {})[st]) || {};
+    const i = prog.i || 0;
+    if (i >= items.length) {
+      if (cur.st === st && cur.bonus) return updateHeaderOnly();
+      if (cur.st === st && cur.done) return updateHeaderOnly();
+      cur = { st, i: null, bonus: false, done: true }; return stageDone(st, prog);
+    }
+    if (cur.st === st && cur.i === i) return updateHeaderOnly();
+    cur = { st, i, bonus: false }; question(st, items, i);
+  }
+  function updateHeaderOnly() { const t = document.querySelector('.top'); if (t) t.outerHTML = header(); }
+  function waitScreen(h, sub) {
+    const r = ranking(), pos = r.findIndex(x => x.id === me.id) + 1;
+    app.innerHTML = header() + `<div class="wrap"><div class="card wait"><h2>${h}</h2><p class="mut">${sub}</p>${pos ? `<p class="mut" style="margin-top:20px">Your position</p><div class="rankme">#${pos}</div>` : ''}${badges()}</div></div>`;
+  }
+  function badges() { const b = (P() || {}).badges || {}; return Object.keys(b).length ? '<div style="margin-top:10px">' + Object.keys(b).map(k => `<span class="badge">${k === 'streak' ? '🔥 Perfect streak' : '🚀 Comeback'}</span>`).join('') + '</div>' : ''; }
+  function login() {
+    const list = names();
+    if (!pick) {
+      app.innerHTML = topBar() + `<div class="wrap"><div class="card"><h1>Spell It! ✏️</h1><p class="mut">Tap your name.</p><div class="names">${list.map(n => `<button data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div></div></div>`;
+      app.querySelectorAll('.names button').forEach(b => b.onclick = () => { pick = b.dataset.n; login(); });
+      return;
+    }
+    const id = slug(pick), p = players()[id], has = p && p.pin;
+    app.innerHTML = topBar() + `<div class="wrap"><div class="card"><h2>${esc(pick)}</h2><p class="mut">${has ? 'Type your PIN (2 numbers).' : 'Create a PIN with 2 numbers. Don\'t forget it!'}</p>
+      <input class="pin" id="pin" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="••"><div id="er" class="mut" style="color:var(--bad);margin-top:6px"></div>
+      <div class="row"><button class="btn sec" id="bk">Back</button><button class="btn" id="ok">${has ? 'Enter' : 'Create PIN'}</button></div></div></div>`;
+    $('#pin').focus();
+    $('#bk').onclick = () => { pick = null; login(); };
+    $('#ok').onclick = () => {
+      const v = $('#pin').value.trim(); if (!/^\d{2}$/.test(v)) { $('#er').textContent = 'Use 2 numbers.'; return; }
+      if (has && p.pin !== v) { $('#er').textContent = 'Wrong PIN. Ask your teacher.'; return; }
+      me = { id, pin: v }; localStorage.setItem('spellit_me_' + SALA, JSON.stringify(me));
+      if (!has) { setPath('players/' + id, Object.assign(p || {}, { name: pick, pin: v, score: (p && p.score) || 0 }), false); send('PATCH', 'players/' + id, { name: pick, pin: v, score: (p && p.score) || 0 }); }
+      pick = null; render();
+    };
+  }
+  function award(st, item, res, extra) { // res ok|cap|bad ; extra {bonus}
+    const p = P(); let pts = 0, streak = p.streak || 0;
+    if (res === 'ok') { streak++; pts = extra.bonus ? 50 : 100; if (!extra.bonus && Date.now() - qStart < 8000) pts += 10; if (streak >= 3) pts += Math.min(30, (streak - 2) * 10); }
+    else if (res === 'cap') { streak = 0; pts = extra.bonus ? 25 : 50; }
+    else streak = 0;
+    const upd = { score: (p.score || 0) + pts, streak };
+    if (streak >= 6) upd['badges/streak'] = true;
+    if (res !== 'ok' && !extra.bonus) upd['miss/' + st + '/' + item.id] = true;
+    return { pts, upd };
+  }
+  function commit(st, upd, nextI, correct, bonus) {
+    const p = P(); const prog = ((p.st || {})[st]) || {};
+    if (!bonus) { upd['st/' + st + '/i'] = nextI; upd['st/' + st + '/c'] = (prog.c || 0) + (correct ? 1 : 0); }
+    else upd['st/' + st + '/b'] = (prog.b || 0) + 1;
+    // local mirror then server
+    for (const k in upd) setPath('players/' + me.id + '/' + k, upd[k], false);
+    send('PATCH', 'players/' + me.id, upd);
+  }
+  function question(st, items, i, bonusItem) {
+    const s = STAGES[st], it = bonusItem || items[i], bonus = !!bonusItem;
+    lock = false; qStart = Date.now();
+    const total = items.length;
+    const lvl = bonus ? 'Bonus lap · +50' : ['', 'Level 1 · Recognize', 'Level 2 · Build', 'Level 3 · Write'][it.lv || 3];
+    let body = '';
+    if (it.t === 'choose') body = promptHtml(it.p) + `<div class="opts ${it.o.length > 3 && it.o.every(o => o.length < 12) ? 'g2' : ''}">${shuffle(it.o, me.id + it.id).map(o => `<button data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+    if (it.t === 'type') body = promptHtml(it.p) + (it.h ? `<div style="text-align:center" class="hint">${it.h}</div>` : '') + `<input class="ans" id="ans" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="type here"><div class="row"><button class="btn" id="go">Check</button></div>`;
+    if (it.t === 'tiles') { const letters = shuffle(it.a.toUpperCase().split(''), me.id + it.id + 't'); body = promptHtml(it.p) + `<div class="built" id="built"></div><div class="tiles">${letters.map((l, k) => `<button data-k="${k}">${l}</button>`).join('')}</div><div class="row"><button class="btn sec" id="del">⌫ Delete</button><button class="btn" id="go">Check</button></div>`; }
+    if (it.t === 'ticket') body = promptHtml(it.p) + `<div class="ticket">${it.its.map((x, k) => `<div class="titem"><span class="e">${x.e}</span><input data-k="${k}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>`).join('')}</div><div class="row"><button class="btn" id="go">Send order</button></div>`;
+    if (it.t === 'fix') body = `<div class="prompt"><div class="ptext">Tap the word with a spelling mistake.</div></div><div class="words">${it.s.split(' ').map((w, k) => `<button data-w="${k}">${esc(w)}</button>`).join('')}</div><div id="fixin" style="display:none"><input class="ans" id="ans" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="write it correctly"><div class="row"><button class="btn" id="go">Check</button></div></div>`;
+    const timed = s.timed && !bonus;
+    app.innerHTML = header() + `<div class="wrap"><div class="card"><div class="stage-h"><div><div class="lvl">${lvl}</div><b>${esc(s.game)}</b></div><span class="mut">${bonus ? '⭐' : (i + 1) + ' / ' + total}</span></div>
+      ${bonus ? '' : `<div class="bar"><i style="width:${i / total * 100}%"></i></div>`}${timed ? '<div class="timer" style="margin-top:8px"><i id="tm"></i></div>' : ''}
+      <div id="q">${body}</div><div id="fb"></div></div></div>`;
+    let tmr = null;
+    if (timed) { const T = s.timed * 1000; tmr = setInterval(() => { const left = Math.max(0, 1 - (Date.now() - qStart) / T); const el = $('#tm'); if (el) el.style.width = left * 100 + '%'; if (left <= 0) { clearInterval(tmr); finish('bad', it.a, true); } }, 100); }
+    const finish = (res, typed, timeout) => {
+      if (lock) return; lock = true; if (tmr) clearInterval(tmr);
+      const { pts, upd } = award(st, it, res, { bonus });
+      const fb = $('#fb');
+      if (res === 'ok') fb.innerHTML = `<div class="fb ok">Correct! +${pts}</div>`;
+      else if (res === 'cap') fb.innerHTML = `<div class="fb half">Almost! Capital letter! +${pts}<div class="cw">${esc(it.a)}</div></div>`;
+      else fb.innerHTML = `<div class="fb bad">${timeout ? 'Time\'s up!' : 'Not quite.'} The correct spelling is:<div class="cw">${it.t === 'choose' ? esc(it.a) : diffHtml(typed || '', it.a)}</div></div>`;
+      const needRetype = res === 'bad' && it.t !== 'choose' && it.t !== 'ticket';
+      const next = () => { commit(st, upd, i + 1, res === 'ok', bonus); if (bonus) bonusLap(st); else render(); };
+      if (needRetype) {
+        fb.innerHTML += `<p class="mut" style="text-align:center">Type it correctly to continue:</p><input class="ans" id="rt" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><div class="row"><button class="btn" id="rtb">Continue</button></div>`;
+        const go = () => { if (check($('#rt').value, { a: it.a, alt: it.alt }) !== 'bad') next(); else $('#rt').style.borderColor = 'var(--bad)'; };
+        $('#rtb').onclick = go; $('#rt').onkeydown = e => { if (e.key === 'Enter') go(); }; $('#rt').focus();
+      } else { fb.innerHTML += `<div class="row"><button class="btn" id="nx">Next →</button></div>`; $('#nx').onclick = next; }
+    };
+    if (it.t === 'choose') app.querySelectorAll('.opts button').forEach(b => b.onclick = () => { if (lock) return; const ok = b.dataset.o === it.a; b.classList.add(ok ? 'ok' : 'bad'); if (!ok) app.querySelector(`.opts button[data-o="${CSS.escape(it.a)}"]`).classList.add('ok'); finish(ok ? 'ok' : 'bad'); });
+    if (it.t === 'type') { const go = () => { const v = $('#ans').value; if (!v.trim() || lock) return; finish(check(v, it), v); }; $('#go').onclick = go; $('#ans').onkeydown = e => { if (e.key === 'Enter') go(); }; setTimeout(() => $('#ans') && $('#ans').focus(), 50); }
+    if (it.t === 'tiles') {
+      let built = []; const upd = () => { $('#built').textContent = built.map(k => app.querySelector(`.tiles button[data-k="${k}"]`).textContent).join(''); };
+      app.querySelectorAll('.tiles button').forEach(b => b.onclick = () => { if (lock) return; built.push(b.dataset.k); b.classList.add('used'); upd(); });
+      $('#del').onclick = () => { if (lock || !built.length) return; const k = built.pop(); app.querySelector(`.tiles button[data-k="${k}"]`).classList.remove('used'); upd(); };
+      $('#go').onclick = () => { if (lock || !built.length) return; const v = $('#built').textContent; finish(check(v.toLowerCase(), { a: it.a.toLowerCase(), alt: (it.alt || []).map(x => x.toLowerCase()) }), v); };
+    }
+    if (it.t === 'ticket') {
+      $('#go').onclick = () => {
+        if (lock) return; const ins = [...app.querySelectorAll('.titem input')]; if (ins.some(x => !x.value.trim())) return;
+        let all = true; ins.forEach((x, k) => { const r = check(x.value, it.its[k]); x.classList.add(r === 'bad' ? 'bad' : 'ok'); if (r === 'bad') { all = false; x.value += '  →  ' + it.its[k].a; } x.disabled = true; });
+        finish(all ? 'ok' : 'bad');
+      };
+    }
+    if (it.t === 'fix') {
+      app.querySelectorAll('.words button').forEach(b => b.onclick = () => {
+        if (lock) return; app.querySelectorAll('.words button').forEach(x => x.classList.remove('sel')); b.classList.add('sel');
+        const w = b.textContent.replace(/[.,!?]/g, '');
+        if (w === it.w) { $('#fixin').style.display = 'block'; $('#ans').focus(); }
+        else { $('#fb').innerHTML = `<div class="fb half">"${esc(w)}" is correct. Look again! 👀</div>`; setTimeout(() => { if (!lock) $('#fb').innerHTML = ''; }, 1400); qStart -= 3000; }
+      });
+      const go = () => { const v = $('#ans').value; if (!v.trim() || lock) return; finish(check(v, it), v); };
+      $('#go').onclick = go; $('#ans').onkeydown = e => { if (e.key === 'Enter') go(); };
+    }
+  }
+  function stageDone(st, prog) {
+    const n = STAGES[st].items.length, c = prog.c || 0, acc = c / n;
+    // comeback badge
+    const prev = st > 0 ? ((P().st || {})[st - 1]) : null;
+    if (prev && prev.i && !(P().badges || {}).comeback) { const pa = (prev.c || 0) / STAGES[st - 1].items.length; if (pa < .7 && acc >= pa + .2) { setPath('players/' + me.id + '/badges/comeback', true); send('PATCH', 'players/' + me.id + '/badges', { comeback: true }); } }
+    const r = ranking().findIndex(x => x.id === me.id) + 1;
+    app.innerHTML = header() + `<div class="wrap"><div class="card wait"><div class="big">🏁</div><h2>${esc(STAGES[st].game)} – done!</h2><p class="mut">First-try correct: <b>${c} / ${n}</b></p><p class="mut">Your position</p><div class="rankme">#${r}</div>${badges()}
+      <div class="row" style="margin-top:16px"><button class="btn or" id="bl">⭐ Bonus lap (+50 each)</button></div><p class="mut" style="margin-top:10px">Wait for the teacher to open the next stage.</p></div></div>`;
+    $('#bl').onclick = () => bonusLap(st);
+  }
+  function bonusLap(st) {
+    if (stageNow() !== st) return render();
+    cur.bonus = true; cur.st = st;
+    const done = (((P().st || {})[st]) || {}).b || 0, pool = shuffle(BONUS, me.id + 'bonus' + st);
+    if (done >= pool.length) { cur.bonus = false; return waitScreen('Bonus lap complete! 🌟', 'Wait for the teacher to open the next stage.'); }
+    question(st, [], 0, pool[done]);
+  }
+  /* --- showdown --- */
+  function showdown() {
+    const sd = (S.config.sd) || {}, it = STAGES[SHOW].items[sd.q];
+    const key = sd.q + '-' + sd.state;
+    if (sdShown === key) return updateHeaderOnly(); sdShown = key;
+    if (sd.q === undefined || sd.state === 'ready') return waitScreen('🐝 Spelling Bee Showdown', 'Look at the TV. Get ready to listen and spell!');
+    const mine = ((S.sd || {})[sd.q] || {})[me.id];
+    if (sd.state === 'q' && !mine) {
+      qStart = Date.now();
+      app.innerHTML = header() + `<div class="wrap"><div class="card"><div class="lvl">Question ${sd.q + 1} / ${STAGES[SHOW].items.length}${it.dbl ? ' · DOUBLE POINTS' : ''}</div><h2>Listen and look at the TV 📺</h2>
+        <input class="ans" id="ans" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="spell the word"><div class="row"><button class="btn" id="go">Send</button></div></div></div>`;
+      const go = () => {
+        const v = $('#ans').value; if (!v.trim()) return; const res = check(v, it);
+        const el = (Date.now() - qStart) / 1000, sp = res === 'ok' ? Math.max(0, Math.round(30 - el * 1.5)) : 0;
+        let pts = res === 'ok' ? 100 + sp : res === 'cap' ? 50 : 0; if (it.dbl) pts *= 2;
+        setPath('sd/' + sd.q + '/' + me.id, { a: v, r: res, pts }); send('PUT', 'sd/' + sd.q + '/' + me.id, { a: v, r: res, pts });
+        const upd = { score: (P().score || 0) + pts }; if (res !== 'ok') upd['miss/' + SHOW + '/' + it.a] = true;
+        for (const k in upd) setPath('players/' + me.id + '/' + k, upd[k]); send('PATCH', 'players/' + me.id, upd);
+        sdShown = null; showdown();
+      };
+      $('#go').onclick = go; $('#ans').onkeydown = e => { if (e.key === 'Enter') go(); }; $('#ans').focus();
+      return;
+    }
+    if (sd.state === 'q') return waitScreen('Answer sent ✅', 'Wait for the answer on the TV.');
+    if (sd.state === 'reveal') {
+      const r = mine ? mine.r : 'none';
+      app.innerHTML = header() + `<div class="wrap"><div class="card wait"><div class="big">${r === 'ok' ? '🎉' : r === 'cap' ? '🙂' : '📝'}</div><h2>${r === 'ok' ? 'Correct! +' + mine.pts : r === 'cap' ? 'Capital letter! +' + mine.pts : 'The answer is:'}</h2><div class="fb ${r === 'ok' ? 'ok' : 'bad'}"><div class="cw">${mine && r !== 'ok' ? diffHtml(mine.a, it.a) : esc(it.a)}</div></div></div></div>`;
+    }
+    if (sd.state === 'end') return waitScreen('🏆 The end!', 'Look at the TV for the podium.');
+  }
+}
+
+/* ================= TV ================= */
+function qrSvg(text, cell) { try { const q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: cell, margin: 2, scalable: true }); } catch (e) { return ''; } }
+function initTV() {
+  let lastSd = null, soundOn = false;
+  listen(render); render();
+  function render() {
+    const st = stageNow(), r = ranking(), cfg = S.config || {};
+    const joinUrl = BASE + '?sala=' + SALA;
+    const pod = (n) => `<div class="podium">${r.slice(0, n).map((x, k) => `<div class="pod"><span class="m">${['🥇', '🥈', '🥉', '4', '5'][k]}</span>${esc(x.name)}<span class="s">${x.score}</span></div>`).join('') || '<p class="tvs">No players yet</p>'}</div>`;
+    if (st < 0 || !STAGES[st]) {
+      app.innerHTML = topBar(`<span class="pill">Room: ${esc(SALA)}</span>`) + `<div class="wrap tv"><p class="tvt">Spell It! ✏️</p><div style="display:flex;gap:34px;align-items:center;margin-top:10px"><div class="qrbox">${qrSvg(joinUrl, 8)}</div><div><p class="tvs" style="font-size:28px;margin:0 0 10px">Scan the QR code with your phone<br>and tap your name.</p><p class="join">${esc(joinUrl)}</p></div></div>
+      <div style="margin-top:20px;font-size:26px">${names().map(n => `<span class="badge" style="font-size:20px">${players()[slug(n)] ? '✅' : '⏳'} ${esc(n)}</span>`).join(' ')}</div></div>`; return;
+    }
+    const s = STAGES[st];
+    if (s.live) return tvShowdown(pod);
+    const items = s.items.length;
+    const rows = names().map(n => { const p = players()[slug(n)] || {}; const pr = ((p.st || {})[st] || {}).i || 0; return `<div class="prow"><span>${esc(n)}</span><div class="bar"><i style="width:${Math.min(1, pr / items) * 100}%"></i></div><span class="${pr >= items ? 'done' : ''}">${pr >= items ? '✓' : pr + '/' + items}</span></div>`; }).join('');
+    app.innerHTML = topBar(`<span class="pill">Room: ${esc(SALA)}</span>`) + `<div class="wrap tv"><p class="tvs">${esc(s.title)}</p><p class="tvt">${esc(s.game)}</p><p class="tvs">${esc(s.sub)}</p>
+      <div class="tvgrid" style="margin-top:20px"><div class="card">${rows}</div><div><h2 style="font-size:26px">Top 3</h2>${pod(3)}<div class="qrmini">${qrSvg(joinUrl, 4)}<span>Lost the game?<br>Scan to come back.</span></div></div></div></div>`;
+  }
+  function tvShowdown(pod) {
+    const sd = (S.config.sd) || {}, items = STAGES[SHOW].items, it = items[sd.q];
+    if (sd.state === 'end' || sd.q === undefined || sd.state === 'ready') {
+      app.innerHTML = topBar(`<span class="pill">Room: ${esc(SALA)}</span>`) + `<div class="wrap tv" style="text-align:center"><p class="tvt">🐝 Spelling Bee Showdown</p>
+        ${sd.state === 'end' ? `<p class="tvs">Final podium</p><div style="max-width:620px;margin:20px auto">${pod(5)}</div>` : `<p class="tvs">Listen and spell on your phone. The last 3 words are worth DOUBLE!</p>${soundOn ? '' : '<button class="btn sm" id="snd" style="margin-top:20px">🔊 Enable sound on this screen</button>'}`}</div>`;
+      const b = $('#snd'); if (b) b.onclick = () => { soundOn = true; say('Ready'); render(); };
+      return;
+    }
+    const ans = (S.sd || {})[sd.q] || {}, n = Object.keys(ans).length, tot = Object.keys(players()).length;
+    if (sd.state === 'q' && lastSd !== sd.q + 'q') { lastSd = sd.q + 'q'; say(it.a); setTimeout(() => say(it.a), 2600); }
+    const who = Object.entries(ans).filter(([, v]) => v.r === 'ok').map(([id]) => esc((players()[id] || {}).name || id));
+    app.innerHTML = topBar(`<span class="pill">Question ${sd.q + 1} / ${items.length}${it.dbl ? ' · DOUBLE' : ''}</span>`) + `<div class="wrap tv"><div class="tvgrid"><div class="card sdq">
+      ${it.p.emoji ? `<div class="emo">${it.p.emoji}</div>` : ''}${it.p.text ? `<div class="ptext">${esc(it.p.text)}</div>` : ''}
+      ${sd.state === 'reveal' ? `<div class="fb ok" style="font-size:54px;margin-top:20px">${esc(it.a)}</div><p class="tvs">Correct: ${who.join(', ') || '—'}</p>` : `<p class="cnt">${n} / ${tot} answered</p><button class="btn sm sec" id="rep">🔊 Repeat</button>`}
+      </div><div><h2 style="font-size:26px">Top 3</h2>${pod(3)}</div></div></div>`;
+    const rp = $('#rep'); if (rp) rp.onclick = () => say(it.a);
+  }
+}
+
+/* ================= TEACHER CONTROL ================= */
+function initProf() {
+  let editing = false;
+  listen(render); render();
+  function render() {
+    if (editing) return;
+    const cfg = S.config || {}, st = stageNow(), r = ranking();
+    const studentUrl = BASE + '?sala=' + SALA, tvUrl = BASE + '?sala=' + SALA + '&tv=1';
+    let missHtml = '';
+    if (st >= 0) {
+      const cnt = {}; Object.values(players()).forEach(p => Object.keys(((p.miss || {})[st]) || {}).forEach(k => cnt[k] = (cnt[k] || 0) + 1));
+      const lookup = id => { for (const s of STAGES) for (const it of s.items) if (it.id === id) return it.a; return id; };
+      const top5 = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      missHtml = top5.length ? top5.map(([k, v]) => `<span>${esc(lookup(k))} ×${v}</span>`).join('') : '<p class="mut">No mistakes yet.</p>';
+    }
+    const sd = cfg.sd || {}, items = STAGES[SHOW].items;
+    app.innerHTML = topBar(`<span class="pill">Teacher · ${esc(SALA)}</span>`) + `<div class="wrap ctl">
+     <div class="card"><h2>Links</h2><p class="mut">Students: <b>${esc(studentUrl)}</b></p><p class="mut">TV (open on the class screen): <b>${esc(tvUrl)}</b></p><p class="mut">Keep this control page on your phone so the TV never shows answers.</p></div>
+     <div class="card"><h2>1 · Students</h2>${names().length ? `<p class="mut">${names().map(esc).join(' · ')}</p>` : '<p class="mut">Add the names before the class (first name + initial, one per line). For a pair on one phone, write "Ana & Bia".</p>'}
+       <button class="btn sm sec" id="edit">${names().length ? 'Edit names' : 'Add names'}</button></div>
+     <div class="card"><h2>2 · Stages</h2><p class="mut">Opening a stage closes the previous one for everybody (points are kept).</p><div class="sgrid">
+       <button data-s="-1" class="${st < 0 ? 'cur' : ''}">Lobby</button>${STAGES.map((s, k) => `<button data-s="${k}" class="${st === k ? 'cur' : ''}">${k + 1}. ${esc(s.game)}</button>`).join('')}</div></div>
+     ${st === SHOW ? `<div class="card"><h2>Showdown control</h2><p class="mut">${sd.q === undefined || sd.state === 'ready' ? 'Not started.' : sd.state === 'end' ? 'Finished.' : `Question ${sd.q + 1}/${items.length}: <b>${esc(items[sd.q].a)}</b> – ${sd.state === 'q' ? 'answering' : 'revealed'} (${Object.keys((S.sd || {})[sd.q] || {}).length} answers)`}</p>
+       <div class="row">${sd.state === 'q' ? '<button class="btn" id="rev">Reveal answer</button>' : (sd.q === undefined || sd.state === 'ready') ? '<button class="btn" id="nq">Start: question 1</button>' : sd.state === 'end' ? '' : (sd.q + 1 < items.length ? '<button class="btn" id="nq">Next question</button>' : '<button class="btn or" id="end">Show podium</button>')}</div></div>` : ''}
+     ${st >= 0 ? `<div class="card"><h2>Top 5 missed words (this stage)</h2><div class="miss">${missHtml}</div></div>` : ''}
+     <div class="card"><h2>Ranking</h2><table class="pl"><tr><th>#</th><th>Name</th><th>Points</th><th>Stage progress</th><th></th></tr>
+       ${r.map((x, k) => { const p = players()[x.id]; const pr = st >= 0 && !STAGES[st].live ? (((p.st || {})[st] || {}).i || 0) + '/' + STAGES[st].items.length : ''; return `<tr><td>${k + 1}</td><td>${esc(x.name)}${p.badges ? ' ' + (p.badges.streak ? '🔥' : '') + (p.badges.comeback ? '🚀' : '') : ''}</td><td>${x.score}</td><td>${pr}</td><td><button class="btn sm sec" data-pin="${x.id}">Reset PIN</button></td></tr>`; }).join('')}</table></div>
+     <div class="card"><h2>Room</h2><button class="btn sm sec" id="reset">Delete all data in this room</button></div></div>`;
+    $('#edit').onclick = () => editNames();
+    app.querySelectorAll('.sgrid button').forEach(b => b.onclick = () => {
+      const k = +b.dataset.s; if (k === st) return;
+      confirmBox(k < 0 ? 'Go back to the lobby?' : `Open stage ${k + 1}: ${STAGES[k].game}?`, () => { const upd = { stage: k }; if (k === SHOW) upd.sd = { state: 'ready' }; setPath('config', upd, true); send('PATCH', 'config', upd); render(); });
+    });
+    app.querySelectorAll('[data-pin]').forEach(b => b.onclick = () => confirmBox(`Reset the PIN of ${esc(players()[b.dataset.pin].name)}? Points are kept.`, () => { setPath('players/' + b.dataset.pin + '/pin', null); send('DELETE', 'players/' + b.dataset.pin + '/pin'); render(); }));
+    const setSd = v => { setPath('config/sd', v); send('PUT', 'config/sd', v); render(); };
+    if ($('#nq')) $('#nq').onclick = () => setSd({ q: sd.q === undefined || sd.state === 'ready' ? 0 : sd.q + 1, state: 'q' });
+    if ($('#rev')) $('#rev').onclick = () => setSd({ q: sd.q, state: 'reveal' });
+    if ($('#end')) $('#end').onclick = () => setSd({ q: sd.q, state: 'end' });
+    $('#reset').onclick = () => confirmBox('Delete ALL data in this room (names, points, answers)? This cannot be undone.', () => { S = {}; send('DELETE', ''); render(); });
+  }
+  function editNames() {
+    editing = true;
+    app.innerHTML = topBar() + `<div class="wrap ctl"><div class="card"><h2>Students (one per line)</h2><textarea id="ta">${names().map(esc).join('\n')}</textarea>
+      <div class="row"><button class="btn sec" id="cx">Cancel</button><button class="btn" id="sv">Save</button></div></div></div>`;
+    $('#cx').onclick = () => { editing = false; render(); };
+    $('#sv').onclick = () => {
+      const list = [...new Set($('#ta').value.split('\n').map(x => x.trim()).filter(Boolean))].slice(0, 20);
+      const obj = {}; list.forEach((n, k) => obj['n' + k] = n);
+      const cfg = { names: obj }; if (typeof (S.config || {}).stage !== 'number') cfg.stage = -1;
+      setPath('config/names', obj); if (cfg.stage !== undefined) setPath('config/stage', -1);
+      send('PATCH', 'config', cfg); editing = false; render();
+    };
+  }
+}
+</script>
+</body>
+</html>
