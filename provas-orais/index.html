@@ -93,6 +93,8 @@ table.t td{padding:9px 8px;border-bottom:1px solid #f0ebf6;vertical-align:middle
 .opt b{color:var(--cw);margin-right:8px}.opt.sel{background:var(--cw);border-color:var(--cw);color:#fff}.opt.sel b{color:#fff}.opt:disabled{cursor:default}
 .wq textarea{font-size:16px}
 .endh{font-size:40px!important}
+.wd{cursor:pointer;border-radius:5px;padding:0 1px}.wd:hover{background:var(--pl)}.wd.bad{background:var(--nol);color:var(--no);text-decoration:underline wavy}
+.vid{position:relative;width:100%;padding-top:56.25%;border-radius:14px;overflow:hidden;background:#000;margin:0 0 14px}.vid iframe,.vid video{position:absolute;inset:0;width:100%;height:100%;border:0}
 </style>
 </head>
 <body>
@@ -143,6 +145,17 @@ const exam = id => EXAMS.find(e => e.id === id);
 function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); }
 function setTtl(small, big) { $('#ttl').innerHTML = `<small>${esc(small)}</small><b>${esc(big)}</b>`; }
 function rid(e, alunoId) { return `${e.id}_${alunoId}`; }
+function embedHtml(u) {
+  if (!u) return '';
+  let m = u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{6,})/);
+  if (m) return `<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}?rel=0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe></div>`;
+  m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/);
+  if (m) return `<div class="vid"><iframe src="https://drive.google.com/file/d/${m[1]}/preview" allow="autoplay; fullscreen" allowfullscreen></iframe></div>`;
+  if (/\.(mp3|m4a|wav|ogg)(\?|$)/i.test(u)) return `<audio controls src="${esc(u)}" style="width:100%;margin:0 0 14px"></audio>`;
+  return `<div class="vid"><video controls src="${esc(u)}"></video></div>`;
+}
+const cleanW = w => w.replace(/^[^A-Za-z0-9']+|[^A-Za-z0-9']+$/g, '');
+function readWords(R) { const rw = R.rw || {}; return Object.keys(rw).sort((a, b) => { const [p1, w1] = a.split('-').map(Number), [p2, w2] = b.split('-').map(Number); return p1 - p2 || w1 - w2; }).map(k => rw[k]).filter((w, i, a) => a.indexOf(w) === i); }
 function newCode() { const a = 'abcdefghjkmnpqrstuvwxyz23456789'; let s = ''; for (let i = 0; i < 5; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
 
 /* ================= FIREBASE (REST + SSE) ================= */
@@ -218,6 +231,8 @@ function draftFeedback(E, R) {
   a += '.';
   if (s.retried) a += ` ${s.retried === 1 ? 'Uma pergunta foi deixada' : Ext(s.retried) + ' perguntas foram deixadas'} para o final e ${s.retried === 1 ? 'retomada' : 'retomadas'} em uma segunda tentativa.`;
   p.push(a);
+  const rws = readWords(R);
+  if (E.reading && rws.length) p.push(`Na leitura em voz alta, precisa praticar a pronúncia de: ${rws.join(', ')}.`);
   if (E.reading) p.push(`Na leitura do texto "${E.reading.titulo}", respondeu corretamente a ${s.r.ok} de ${s.nR} perguntas de compreensão${s.r.half ? ` (e parcialmente a ${s.r.half})` : ''}.`);
   if (E.listening) p.push(`No ${E.listening.tipo.toLowerCase()}, acertou ${s.w.ok} de ${s.nW} questões.`);
   const c = R.c || {};
@@ -346,7 +361,7 @@ async function runner(id) {
   if (!R) R = ALL[id];
   if (!R) { app.innerHTML = `<div class="wrap"><div class="card">Prova não encontrada. <a href="#/">Voltar</a></div></div>`; return; }
   E = exam(R.exam);
-  ['m', 'm2', 'h', 'n', 'c', 'w'].forEach(k => R[k] = R[k] || {});
+  ['m', 'm2', 'h', 'n', 'c', 'w', 'rw'].forEach(k => R[k] = R[k] || {});
   setTtl(`${E.nome} · ${E.semestre} · ${R.aluno.nome}`, 'Oral Exam');
   buildSteps();
   if (liveES) liveES.close();
@@ -455,8 +470,9 @@ function renderMain() {
       <div class="hint" style="margin-top:12px">Esta parte não vale ponto: avalie nos critérios.</div>
       ${noteHtml('pic', 'Anotações sobre a descrição')}${navHtml()}</div>`;
   } else if (st.k === 'read') {
-    h = `<div class="card"><div class="sec c-read">Reading</div><div class="mut">O aluno lê o texto em voz alta. Anote pronúncia e entonação.</div>
-      <div class="rtext small"><h2>${esc(E.reading.titulo)}</h2>${E.reading.texto.map(p => `<p>${esc(p)}</p>`).join('')}</div>
+    h = `<div class="card"><div class="sec c-read">Reading</div><div class="mut">O aluno lê o texto em voz alta. <b>Clique nas palavras que ele ler errado</b> (clique de novo para desmarcar). Elas entram no feedback.</div>
+      <div class="rtext small"><h2>${esc(E.reading.titulo)}</h2>${E.reading.texto.map((p, pi) => { let wi = 0; return `<p>${p.split(/(\s+)/).map(t => { if (!t.trim()) return t; const k = `${pi}-${wi++}`, c = cleanW(t); return c ? `<span class="wd ${R.rw[k] ? 'bad' : ''}" data-wd="${k}" data-c="${esc(c)}">${esc(t)}</span>` : esc(t); }).join('')}</p>`; }).join('')}</div>
+      <div class="tiny" id="rwl">${readWords(R).length ? 'Marcadas: ' + esc(readWords(R).join(', ')) : 'Nenhuma palavra marcada.'}</div>
       ${noteHtml('read', 'Pronúncia e entonação')}${navHtml()}</div>`;
   } else if (st.k === 'rq') {
     const key = 'r' + st.i, it = E.reading.perguntas[st.i];
@@ -468,6 +484,7 @@ function renderMain() {
   } else if (st.k === 'watch') {
     h = `<div class="card"><div class="sec c-w">${esc(L.tipo)} · ${esc(L.titulo)}</div>
       <div class="mut">${esc(L.fonte)}. Coloque o vídeo/áudio para o aluno. Ele clica nas respostas na tela dele; você acompanha aqui.</div>
+      ${L.video ? `<label class="tog"><input type="checkbox" id="vshow" ${LIVE.v.vid !== false ? 'checked' : ''}> Mostrar o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} na tela do aluno</label>` : `<div class="hint">Esta prova ainda não tem o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} incluído: coloque-o para o aluno pelo seu computador.</div>`}
       <div id="wlive"></div>
       <label class="tog"><input type="checkbox" id="wlock" ${LIVE.v.wlock ? 'checked' : ''}> Travar as respostas do aluno</label>
       ${noteHtml('w', 'Anotações')}${navHtml()}</div>`;
@@ -495,6 +512,8 @@ function renderMain() {
   });
   el.querySelectorAll('[data-pg]').forEach(im => im.onclick = () => { setL('v/page', +im.dataset.pg); renderMain(); });
   el.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { setR('c/' + b.dataset.c, +b.dataset.v); renderMain(); renderSide(); });
+  el.querySelectorAll('[data-wd]').forEach(w => w.onclick = () => { const k = w.dataset.wd; if (R.rw[k]) { setR('rw/' + k, null); w.classList.remove('bad'); } else { setR('rw/' + k, w.dataset.c); w.classList.add('bad'); } const l = readWords(R); $('#rwl').textContent = l.length ? 'Marcadas: ' + l.join(', ') : 'Nenhuma palavra marcada.'; renderSide(); });
+  const vs = $('#vshow'); if (vs) vs.onchange = () => setL('vid', vs.checked);
   const wl = $('#wlock'); if (wl) wl.onchange = () => setL('wlock', wl.checked);
   const fim = $('#fim'); if (fim) fim.onclick = () => { setL('v', { k: 'end' }); setR('status', 'rascunho'); setR('fim', new Date().toISOString()); go(R.step + 1); };
   if (st.k === 'watch') renderMainWatchLive();
@@ -527,6 +546,7 @@ function reportHtml() {
       <div class="fin"><b>${pct(s.final)}</b><span>Nota final</span></div>
     </div>
     <div class="tiny" style="margin-bottom:10px">Apoio (pergunta na tela): ${s.help} · Nova tentativa: ${s.retried}</div>
+    ${readWords(R).length ? `<label class="lb">Palavras lidas com erro</label><div style="font-size:14px">${esc(readWords(R).join(', '))}</div>` : ''}
     ${notes ? `<label class="lb">Suas anotações</label><ul class="notelist">${notes}</ul>` : ''}
     <label class="lb">Feedback para os pais</label>
     <textarea id="fb" style="min-height:260px">${esc(R.fb || draftFeedback(E, R))}</textarea>
@@ -573,7 +593,7 @@ function studentRender() {
   if (!L || !L.exam) { app.innerHTML = `<div class="st narrow"><div class="card center"><h2>Code not found</h2><p class="mut">Check the code with your teacher.</p><a class="btn" href="${BASE}?aluno=1" style="text-decoration:none;display:inline-block">Try again</a></div></div>`; return; }
   const Ex = exam(L.exam); if (!Ex) return;
   const v = L.v || { k: 'welcome' };
-  const sig = JSON.stringify([v, L.wa, L.wlock, L.wt && v.k === 'watch' ? 1 : 0]);
+  const sig = JSON.stringify([v, L.wa, L.wlock, L.vid, L.wt && v.k === 'watch' ? 1 : 0]);
   if (sig === lastSig) return; lastSig = sig;
   const active = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.wt;
   if (active !== undefined && v.k === 'watch') return; // não redesenhar enquanto o aluno digita
@@ -595,7 +615,7 @@ function studentRender() {
       <div class="rtext ${v.k === 'rq' ? 'small' : ''}"><h2>${esc(Ex.reading.titulo)}</h2>${Ex.reading.texto.map(p => `<p>${esc(p)}</p>`).join('')}</div></div>`;
   } else if (v.k === 'watch') {
     const Lx = Ex.listening, wa = L.wa || {}, lk = !!L.wlock;
-    h = `<div class="card"><div class="sec c-w">${esc(Lx.tipo)}</div><p style="font-weight:600">${esc(Lx.instrucao)}</p>
+    h = `<div class="card"><div class="sec c-w">${esc(Lx.tipo)}</div>${Lx.video && L.vid !== false ? embedHtml(Lx.video) : ''}<p style="font-weight:600">${esc(Lx.instrucao)}</p>
       ${Lx.itens.map((it, i) => `<div class="wq"><p>${i + 1}. ${esc(it.q)}</p>${it.op ? it.op.map((o, j) => `<button class="opt ${String(wa[i]) === String(j) ? 'sel' : ''}" data-q="${i}" data-o="${j}" ${lk ? 'disabled' : ''}><b>${L3[j]}</b>${esc(o)}</button>`).join('') : `<textarea data-wt="${i}" ${lk ? 'disabled' : ''}>${esc((L.wt || {})[i] || '')}</textarea>`}</div>`).join('')}
       ${lk ? '<p class="mut center">Your answers were sent to your teacher.</p>' : ''}</div>`;
   } else if (v.k === 'end') {

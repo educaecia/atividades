@@ -58,6 +58,7 @@ EXAMS.push({
     tipo: 'Watching',
     titulo: 'A typical day?',
     fonte: 'Wider World 1 · BBC Culture 3 · pages 94–95',
+    video: '', // link do YouTube, do Google Drive ou de um arquivo de vídeo/áudio
     instrucao: 'Watch the video. Choose the correct answer.',
     itens: [
       { q: 'Where are the children in the video from?', op: ['Brazil, Japan, the USA and Mexico', 'England, Japan, Wales and Papua New Guinea', 'England, China, Spain and Australia'], c: 1 },
