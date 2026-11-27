@@ -430,8 +430,9 @@ function renderSide() {
     <div class="tiny" style="word-break:break-all">${esc(link)}</div>` : `<div class="tiny" style="margin-top:6px">${R.status === 'aprovado' ? `Aprovada por ${esc(R.aprov.por)} em ${dataBR(R.aprov.em)}` : 'Prova encerrada · aguardando aprovação'}</div>`}
     <label class="lb">Andamento</label><div class="tiny">Itens: ${num(s.pts)} de ${s.total} · Apoio: ${s.help} · Puladas: ${E.perguntas.filter((q, j) => R.m['q' + j] === 'skip').length}</div>
     <div class="steps">${STEPS.map((st, i) => `<button data-go="${i}" class="${i === R.step ? 'on' : ''}"><span class="m ${stepMark(st)}"></span>${esc(st.t)}${(st.k === 'q' || st.k === 'retry') && R.h['q' + st.i] || st.k === 'rq' && R.h['r' + st.i] ? ' <span class="tiny">· apoio</span>' : ''}</button>`).join('')}</div>
-    <div class="row" style="margin-top:12px"><a class="btn sm sec2" href="#/" style="text-decoration:none">Voltar à lista</a></div>
+    <div class="row" style="margin-top:12px"><a class="btn sm sec2" href="#/" style="text-decoration:none">Voltar à lista</a><span class="sp"></span><button class="btn sm sec2" id="del" style="color:var(--no)">Apagar prova</button></div>
   </div>`;
+  $('#del').onclick = () => { if (!confirm(`Apagar a prova de ${R.aluno.nome}? Tudo o que foi marcado será perdido e ela volta a "Não iniciada".`)) return; send('PUT', `${ROOT}/r/${RID}`, null); send('PUT', `po-${R.code}`, null); delete ALL[RID]; if (liveES) liveES.close(); clearInterval(runner.t); setTimeout(() => { location.hash = '#/'; }, 600); };
   const c = $('#cpl'); if (c) c.onclick = () => navigator.clipboard.writeText(link).then(() => toast('Link copiado'));
   el.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(+b.dataset.go));
 }
