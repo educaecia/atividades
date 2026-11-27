@@ -494,6 +494,11 @@ function renderMain() {
   if (st.k === 'welcome') {
     h = `<div class="card"><div class="sec c-p">Início</div>
       <p>O aluno vê a tela de boas-vindas. Envie o <b>link</b> (ou o <b>código ${R.code}</b>) e comece quando a bolinha à esquerda ficar verde. As anotações ficam na coluna da direita.</p>
+      <div class="hint" style="border-left-color:var(--cw)"><b>Prova online pelo Meet: acompanhe o aluno e a prova ao mesmo tempo</b><br>
+        1. Abra o Meet no Chrome e, se puder, peça para o aluno ligar a câmera.<br>
+        2. Nos três pontinhos do Meet, escolha <b>"Abrir imagem em picture-in-picture"</b>. Em versões mais novas do Chrome, a janelinha também pode abrir sozinha quando você troca de aba.<br>
+        3. Volte para esta aba: a câmera do aluno fica numa janelinha flutuante por cima da prova. Você pode arrastá-la para um canto e mudar o tamanho.<br>
+        4. Peça para o aluno deixar o Meet em <b>outra janela ou outro aparelho</b> (por exemplo, o Meet no celular e a prova no computador). Se ele trocar de aba, o sistema conta como saída da página.</div>
       <div class="hint">Durante as perguntas: <b>Certo</b> vale 1, <b>Mais ou menos</b> vale 0,5, <b>Errado</b> vale 0. <b>Pular</b> deixa a pergunta para o final, para uma nova tentativa. "Mostrar a pergunta na tela" não tira ponto, mas fica registrado e aparece no feedback.</div>
       ${navHtml()}</div>`;
   } else if (st.k === 'q' || st.k === 'retry') {
