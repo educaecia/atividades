@@ -55,6 +55,7 @@ details.cod summary::-webkit-details-marker{display:none}details.cod summary:aft
 .wdots{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.wdots button{width:32px;height:32px;border-radius:50%;border:1.5px solid #d9cfe8;background:#fff;font-size:13px;font-weight:600;color:var(--ink)}
 .wdots button.ans{background:var(--cw);border-color:var(--cw);color:#fff}.wdots button.cur{box-shadow:0 0 0 3px #cfe3bd}
 .st.wide{max-width:1200px}
+.away{background:var(--nol);color:var(--no);border-radius:10px;padding:7px 10px;font-size:13px;font-weight:600;margin-top:8px}.awayt{font-size:12.5px;color:var(--mut);margin-top:6px}
 .who{display:flex;align-items:center;gap:8px;font-size:14px}.dot{width:10px;height:10px;border-radius:50%;background:#c9c2d6;flex:none}.dot.on{background:var(--ok)}
 .code{font-size:26px;font-weight:700;letter-spacing:4px;color:var(--p)}
 .steps{display:flex;flex-direction:column;gap:3px;max-height:52vh;overflow:auto;margin-top:6px}
@@ -176,6 +177,8 @@ function videoSrc(u) {
 }
 const cleanW = w => w.replace(/^[^A-Za-z0-9']+|[^A-Za-z0-9']+$/g, '');
 function readWords(R) { const rw = R.rw || {}; return Object.keys(rw).sort((a, b) => { const [p1, w1] = a.split('-').map(Number), [p2, w2] = b.split('-').map(Number); return p1 - p2 || w1 - w2; }).map(k => rw[k]).filter((w, i, a) => a.indexOf(w) === i); }
+const mmss = n => { n = Math.max(0, Math.round(n)); return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`; };
+function awayInfo(aw, now) { aw = aw || {}; const cur = aw.s ? (now - aw.s) / 1000 : 0; return { n: (aw.n || 0) + (aw.s ? 1 : 0), total: (aw.t || 0) / 1000 + cur, cur, out: !!aw.s }; }
 function newCode() { const a = 'abcdefghjkmnpqrstuvwxyz23456789'; let s = ''; for (let i = 0; i < 5; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
 
 /* ================= FIREBASE (REST + SSE) ================= */
@@ -397,13 +400,14 @@ async function runner(id) {
   if (R.status !== 'andamento' && (R.step || 0) < STEPS.length - 2) R.step = STEPS.findIndex(s => s.k === 'report');
   codeOpen = !R.step;
   renderRun();
-  clearInterval(runner.t); runner.t = setInterval(renderSide, 5000);
+  clearInterval(runner.t); runner.t = setInterval(renderSide, 2000);
 }
 function onLive() {
   const wa = LIVE.v.wa || {};
   let ch = false;
   if (E.listening) E.listening.itens.forEach((it, i) => { const a = wa[i]; const cur = R.w[i]; if (a !== undefined && a !== null && String(a) !== String(cur ?? '')) { R.w[i] = a; ch = true; } });
   if (ch) setR('w', R.w);
+  const aw = LIVE.v.aw || {}; if ((aw.n || 0) !== ((R.aw || {}).n || 0) || (aw.t || 0) !== ((R.aw || {}).t || 0)) setR('aw', { n: aw.n || 0, t: aw.t || 0 });
   renderSide();
   if (STEPS[R.step] && STEPS[R.step].k === 'watch') renderMainWatchLive();
 }
@@ -448,6 +452,7 @@ function renderSide() {
   const s = calc(E, R);
   el.innerHTML = `<div class="card">
     <div class="who"><span class="dot ${here ? 'on' : ''}"></span><b>${esc(R.aluno.nome)}</b><span class="sp"></span><span class="tiny">${here ? 'conectado' : 'não conectado'}</span></div>
+    ${(() => { if (R.status !== 'andamento') return ''; const a = awayInfo(LIVE.v.aw, Date.now()); return (a.out ? `<div class="away">Saiu da página há ${mmss(a.cur)}</div>` : '') + (a.n ? `<div class="awayt">Saiu da página ${a.n} ${a.n === 1 ? 'vez' : 'vezes'} · ${mmss(a.total)} no total</div>` : ''); })()}
     ${R.status === 'andamento' ? `<details class="cod" ${codeOpen ? 'open' : ''}><summary>Link e código do aluno</summary><div class="row"><span class="code">${R.code}</span><span class="sp"></span><button class="btn sm sec2" id="cpl">Copiar link</button></div>
     <div class="tiny" style="word-break:break-all">${esc(link)}</div></details>` : `<div class="tiny" style="margin-top:6px">${R.status === 'aprovado' ? `Aprovada por ${esc(R.aprov.por)} em ${dataBR(R.aprov.em)}` : 'Prova encerrada · aguardando aprovação'}</div>`}
     <label class="lb">Andamento</label><div class="tiny">Itens: ${num(s.pts)} de ${s.total} · Apoio: ${s.help} · Puladas: ${E.perguntas.filter((q, j) => R.m['q' + j] === 'skip').length}</div>
@@ -595,7 +600,7 @@ function reportHtml() {
       <div><b>${pct(s.crit)}</b><span>Critérios (${PESO_CRIT * 100}%)</span></div>
       <div class="fin"><b>${pct(s.final)}</b><span>Nota final</span></div>
     </div>
-    <div class="tiny" style="margin-bottom:10px">Apoio (pergunta na tela): ${s.help} · Nova tentativa: ${s.retried}</div>
+    <div class="tiny" style="margin-bottom:10px">Apoio (pergunta na tela): ${s.help} · Nova tentativa: ${s.retried} · Saiu da página: ${(R.aw && R.aw.n) ? `${R.aw.n} ${R.aw.n === 1 ? 'vez' : 'vezes'}, ${mmss(R.aw.t / 1000)} no total` : 'não'}</div>
     ${readWords(R).length ? `<label class="lb">Palavras lidas com erro</label><div style="font-size:14px">${esc(readWords(R).join(', '))}</div>` : ''}
     ${notes ? `<label class="lb">Suas anotações</label><ul class="notelist">${notes}</ul>` : ''}
     <label class="lb">Feedback para os pais</label>
@@ -637,6 +642,12 @@ function studentStart() {
   app.innerHTML = `<div class="st"><div class="card center"><p class="mut">Connecting…</p></div></div>`;
   listen(`po-${c}`, SL, studentRender);
   const beat = () => send('PUT', `po-${c}/here`, Date.now()); beat(); setInterval(beat, 10000);
+  let awS = null;
+  document.addEventListener('visibilitychange', () => {
+    const aw = (SL.v && SL.v.aw) || {};
+    if (document.hidden) { awS = Date.now(); SL.v = setIn(SL.v || {}, 'aw/s', awS, false); send('PUT', `po-${c}/aw/s`, awS); }
+    else if (awS || aw.s) { const st = awS || aw.s, d = Date.now() - st; awS = null; const n = (aw.n || 0) + 1, t = (aw.t || 0) + d; SL.v = setIn(SL.v || {}, 'aw', { n, t }, false); send('PUT', `po-${c}/aw`, { n, t }); }
+  });
 }
 let lastSig = '';
 function studentRender() {
