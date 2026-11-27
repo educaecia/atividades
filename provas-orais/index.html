@@ -129,6 +129,7 @@ const DEFAULT_DB = 'https://educaecia-aulas-default-rtdb.firebaseio.com';
 const Q = new URLSearchParams(location.search);
 const DB = (Q.get('db') && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(Q.get('db'))) ? Q.get('db') : DEFAULT_DB;
 const ROOT = 'provas-orais';                      // resultados: aulas/provas-orais/r/<id>
+const DRIVE_KEY = 'AIzaSyBjNlHsb-rYIc1g2IJgIHNajo9Rx8h-sow';                            // chave da API do Google Drive (restrita ao site das provas)
 const SENHA = 'educa2026';                        // senha simples das professoras
 const PROFS = ['Luana', 'Laura', 'Clara', 'Laís'];
 const CRITERIOS = [
@@ -172,7 +173,7 @@ function embedHtml(u) {
 }
 function videoSrc(u) {
   if (!u) return null;
-  const m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/); if (m) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+  const m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/); if (m) return DRIVE_KEY ? `https://www.googleapis.com/drive/v3/files/${m[1]}?alt=media&key=${DRIVE_KEY}` : `https://drive.google.com/uc?export=download&id=${m[1]}`;
   if (/\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(u)) return u;
   return null; // YouTube: sem controle pela professora
 }
