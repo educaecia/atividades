@@ -55,6 +55,7 @@ details.cod summary::-webkit-details-marker{display:none}details.cod summary:aft
 .wdots{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.wdots button{width:32px;height:32px;border-radius:50%;border:1.5px solid #d9cfe8;background:#fff;font-size:13px;font-weight:600;color:var(--ink)}
 .wdots button.ans{background:var(--cw);border-color:var(--cw);color:#fff}.wdots button.cur{box-shadow:0 0 0 3px #cfe3bd}
 .st.wide{max-width:1200px}
+.pip{max-width:640px;margin:26px auto 0;text-align:left;background:#f1f7ea;border-left:5px solid var(--cw);border-radius:14px;padding:14px 18px;font-size:15px}.pip b.h{display:block;color:var(--cw);margin-bottom:4px}.pip ol{margin:6px 0 0;padding-left:20px}.pip li{margin:4px 0}.pip .pt{display:block;font-size:12.5px;color:var(--mut)}
 .away{background:var(--nol);color:var(--no);border-radius:10px;padding:7px 10px;font-size:13px;font-weight:600;margin-top:8px}.awayt{font-size:12.5px;color:var(--mut);margin-top:6px}
 .who{display:flex;align-items:center;gap:8px;font-size:14px}.dot{width:10px;height:10px;border-radius:50%;background:#c9c2d6;flex:none}.dot.on{background:var(--ok)}
 .code{font-size:26px;font-weight:700;letter-spacing:4px;color:var(--p)}
@@ -498,7 +499,7 @@ function renderMain() {
         1. Abra o Meet no Chrome e, se puder, peça para o aluno ligar a câmera.<br>
         2. Nos três pontinhos do Meet, escolha <b>"Abrir imagem em picture-in-picture"</b>. Em versões mais novas do Chrome, a janelinha também pode abrir sozinha quando você troca de aba.<br>
         3. Volte para esta aba: a câmera do aluno fica numa janelinha flutuante por cima da prova. Você pode arrastá-la para um canto e mudar o tamanho.<br>
-        4. Peça para o aluno deixar o Meet em <b>outra janela ou outro aparelho</b> (por exemplo, o Meet no celular e a prova no computador). Se ele trocar de aba, o sistema conta como saída da página.</div>
+        4. A tela de boas-vindas do aluno também explica como ele deixa você numa janelinha. Dê um tempinho para ele configurar <b>antes de clicar em Próximo</b>: na tela de boas-vindas, as saídas da página não são contadas. Depois disso, se ele trocar de aba, o sistema conta como saída.</div>
       <div class="hint">Durante as perguntas: <b>Certo</b> vale 1, <b>Mais ou menos</b> vale 0,5, <b>Errado</b> vale 0. <b>Pular</b> deixa a pergunta para o final, para uma nova tentativa. "Mostrar a pergunta na tela" não tira ponto, mas fica registrado e aparece no feedback.</div>
       ${navHtml()}</div>`;
   } else if (st.k === 'q' || st.k === 'retry') {
@@ -650,6 +651,8 @@ function studentStart() {
   let awS = null;
   document.addEventListener('visibilitychange', () => {
     const aw = (SL.v && SL.v.aw) || {};
+    const vk = ((SL.v && SL.v.v) || {}).k || 'welcome';
+    if (document.hidden && (vk === 'welcome' || vk === 'end')) return;
     if (document.hidden) { awS = Date.now(); SL.v = setIn(SL.v || {}, 'aw/s', awS, false); send('PUT', `po-${c}/aw/s`, awS); }
     else if (awS || aw.s) { const st = awS || aw.s, d = Date.now() - st; awS = null; const n = (aw.n || 0) + 1, t = (aw.t || 0) + d; SL.v = setIn(SL.v || {}, 'aw', { n, t }, false); send('PUT', `po-${c}/aw`, { n, t }); }
   });
@@ -667,7 +670,11 @@ function studentRender() {
   setTtl(`${Ex.nome} · ${Ex.semestre}`, 'Oral Exam');
   let h = '';
   if (v.k === 'welcome') {
-    h = `<div class="card hero"><div class="sec c-p" style="justify-content:center">Oral Exam</div><h1>Welcome to your Oral Exam${L.aluno ? ', ' + esc(L.aluno) : ''}!</h1><p>${esc(Ex.intro || DEF_INTRO)}</p><div class="luck">Good luck!</div></div>`;
+    h = `<div class="card hero"><div class="sec c-p" style="justify-content:center">Oral Exam</div><h1>Welcome to your Oral Exam${L.aluno ? ', ' + esc(L.aluno) : ''}!</h1><p>${esc(Ex.intro || DEF_INTRO)}</p><div class="luck">Good luck!</div>
+      <div class="pip"><b class="h">Is your exam online? Keep your teacher on the screen.</b><span class="pt">A prova é online? Deixe a professora na tela.</span>
+        <ol><li><b>On a computer:</b> in Google Meet (Chrome), click the three dots and choose <b>"Open picture-in-picture"</b>. Then come back to this page. Your teacher stays in a small window over the exam.<span class="pt">No computador: no Meet, clique nos três pontinhos e escolha "Abrir imagem em picture-in-picture". Depois volte para esta página.</span></li>
+        <li><b>On a phone or tablet:</b> join the call in the Meet app, then open this page. Meet keeps your teacher in a small window.<span class="pt">No celular ou tablet: entre na chamada pelo app do Meet e depois abra esta página.</span></li>
+        <li>Do this <b>now</b>, before the exam starts. During the exam, stay on this page.<span class="pt">Faça isso agora, antes de a prova começar. Durante a prova, fique nesta página.</span></li></ol></div></div>`;
   } else if (v.k === 'q' || v.k === 'retry') {
     h = `<div class="card"><div class="sec c-q">Questions</div><div class="qnum">${v.k === 'retry' ? "Let's try this one again" : `Question ${v.i + 1} of ${Ex.perguntas.length}`}</div>
       ${v.show ? `<div class="sq">${esc(Ex.perguntas[v.i])}</div>` : `<div class="listen">Listen to your teacher's question.</div>`}</div>`;
