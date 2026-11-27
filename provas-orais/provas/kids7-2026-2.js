@@ -56,7 +56,7 @@ EXAMS.push({
     audio: true,
     titulo: 'Mia and Jason: music',
     fonte: 'english-practice.net · A2 Listening · Music and musical instruments · Exercise 1',
-    video: 'https://drive.google.com/file/d/1p4lsadTq06mwege4cIJ5E_LriXZLGInI/view',
+    video: 'https://drive.google.com/file/d/1yI8ymOsQNcSim_vOey6m1ts6S7gIe3vq/view',
     instrucao: 'Listen to Mia and Jason talking about music. Choose the correct answer.',
     itens: [
       { q: 'What does Mia think of the new album?', op: ["It's boring.", "It's fantastic.", "It's too loud."], c: 1 },
