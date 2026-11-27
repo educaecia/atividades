@@ -40,9 +40,21 @@ table.t td{padding:9px 8px;border-bottom:1px solid #f0ebf6;vertical-align:middle
 .toast{position:fixed;bottom:18px;right:18px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s}
 .toast.on{opacity:1}
 /* teacher runner */
-.run{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
-@media(max-width:900px){.run{grid-template-columns:1fr}}
-.side{position:sticky;top:84px}
+.wrap.wide{max-width:1480px}
+.run{display:grid;grid-template-columns:250px minmax(0,1fr) 310px;gap:16px;align-items:start}
+@media(max-width:1150px){.run{grid-template-columns:230px minmax(0,1fr)}.notesp{grid-column:2}}
+@media(max-width:760px){.run{grid-template-columns:1fr}.notesp{grid-column:auto}}
+.side{position:sticky;top:84px}.side .card{padding:16px}
+.notesp textarea{min-height:220px}.notesp textarea.g{min-height:110px}
+details.cod summary{cursor:pointer;font-size:11.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);margin:12px 0 4px;list-style:none;display:flex;align-items:center;gap:6px}
+details.cod summary::-webkit-details-marker{display:none}details.cod summary:after{content:'';width:7px;height:7px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(-45deg);margin-left:2px;transition:transform .15s}details.cod[open] summary:after{transform:rotate(45deg)}
+.vbar{height:6px;border-radius:4px;background:#dfe9d3;overflow:hidden;flex-basis:100%}.vbar i{display:block;height:100%;background:var(--cw)}
+.wlay{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:18px;align-items:start}.wlay.nov{grid-template-columns:1fr}
+@media(max-width:820px){.wlay{grid-template-columns:1fr}}
+.wnav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
+.wdots{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.wdots button{width:32px;height:32px;border-radius:50%;border:1.5px solid #d9cfe8;background:#fff;font-size:13px;font-weight:600;color:var(--ink)}
+.wdots button.ans{background:var(--cw);border-color:var(--cw);color:#fff}.wdots button.cur{box-shadow:0 0 0 3px #cfe3bd}
+.st.wide{max-width:1200px}
 .who{display:flex;align-items:center;gap:8px;font-size:14px}.dot{width:10px;height:10px;border-radius:50%;background:#c9c2d6;flex:none}.dot.on{background:var(--ok)}
 .code{font-size:26px;font-weight:700;letter-spacing:4px;color:var(--p)}
 .steps{display:flex;flex-direction:column;gap:3px;max-height:52vh;overflow:auto;margin-top:6px}
@@ -353,6 +365,7 @@ function classDoc(E, download) {
 }
 
 /* ================= TEACHER RUNNER ================= */
+let codeOpen = false;
 let R = null, E = null, RID = null, LIVE = { v: {} }, liveES = null, STEPS = [];
 function buildSteps() {
   const s = [{ k: 'welcome', t: 'Início' }];
@@ -382,6 +395,7 @@ async function runner(id) {
   LIVE = { v: {} };
   liveES = listen(`po-${R.code}`, LIVE, onLive);
   if (R.status !== 'andamento' && (R.step || 0) < STEPS.length - 2) R.step = STEPS.findIndex(s => s.k === 'report');
+  codeOpen = !R.step;
   renderRun();
   clearInterval(runner.t); runner.t = setInterval(renderSide, 5000);
 }
@@ -415,6 +429,7 @@ function go(i) {
   setR('step', i);
   const st = cur();
   if (R.status === 'andamento' && st.k !== 'end') setL('v', studentViewFor(st));
+  codeOpen = i === 0;
   renderRun(); window.scrollTo(0, 0);
 }
 function stepMark(st) {
@@ -433,13 +448,14 @@ function renderSide() {
   const s = calc(E, R);
   el.innerHTML = `<div class="card">
     <div class="who"><span class="dot ${here ? 'on' : ''}"></span><b>${esc(R.aluno.nome)}</b><span class="sp"></span><span class="tiny">${here ? 'conectado' : 'não conectado'}</span></div>
-    ${R.status === 'andamento' ? `<label class="lb">Código do aluno</label><div class="row"><span class="code">${R.code}</span><span class="sp"></span><button class="btn sm sec2" id="cpl">Copiar link</button></div>
-    <div class="tiny" style="word-break:break-all">${esc(link)}</div>` : `<div class="tiny" style="margin-top:6px">${R.status === 'aprovado' ? `Aprovada por ${esc(R.aprov.por)} em ${dataBR(R.aprov.em)}` : 'Prova encerrada · aguardando aprovação'}</div>`}
+    ${R.status === 'andamento' ? `<details class="cod" ${codeOpen ? 'open' : ''}><summary>Link e código do aluno</summary><div class="row"><span class="code">${R.code}</span><span class="sp"></span><button class="btn sm sec2" id="cpl">Copiar link</button></div>
+    <div class="tiny" style="word-break:break-all">${esc(link)}</div></details>` : `<div class="tiny" style="margin-top:6px">${R.status === 'aprovado' ? `Aprovada por ${esc(R.aprov.por)} em ${dataBR(R.aprov.em)}` : 'Prova encerrada · aguardando aprovação'}</div>`}
     <label class="lb">Andamento</label><div class="tiny">Itens: ${num(s.pts)} de ${s.total} · Apoio: ${s.help} · Puladas: ${E.perguntas.filter((q, j) => R.m['q' + j] === 'skip').length}</div>
     <div class="steps">${STEPS.map((st, i) => `<button data-go="${i}" class="${i === R.step ? 'on' : ''}"><span class="m ${stepMark(st)}"></span>${esc(st.t)}${(st.k === 'q' || st.k === 'retry') && R.h['q' + st.i] || st.k === 'rq' && R.h['r' + st.i] ? ' <span class="tiny">· apoio</span>' : ''}</button>`).join('')}</div>
     <div class="row" style="margin-top:12px"><a class="btn sm sec2" href="#/" style="text-decoration:none">Voltar à lista</a><span class="sp"></span><button class="btn sm sec2" id="del" style="color:var(--no)">Apagar prova</button></div>
   </div>`;
   $('#del').onclick = () => { if (!confirm(`Apagar a prova de ${R.aluno.nome}? Tudo o que foi marcado será perdido e ela volta a "Não iniciada".`)) return; send('PUT', `${ROOT}/r/${RID}`, null); send('PUT', `po-${R.code}`, null); delete ALL[RID]; if (liveES) liveES.close(); clearInterval(runner.t); setTimeout(() => { location.hash = '#/'; }, 600); };
+  const dt = el.querySelector('details.cod'); if (dt) dt.ontoggle = () => { codeOpen = dt.open; };
   const c = $('#cpl'); if (c) c.onclick = () => navigator.clipboard.writeText(link).then(() => toast('Link copiado'));
   el.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(+b.dataset.go));
 }
@@ -448,10 +464,19 @@ function marksHtml(sel, skip) {
   return `<div class="marks ${skip ? '' : 'three'}">${b('ok', 'Certo', 'vale 1')}${b('half', 'Mais ou menos', 'vale 0,5')}${b('no', 'Errado', 'vale 0')}${skip ? b('skip', 'Pular', 'volta no final') : ''}</div>`;
 }
 function noteHtml(key, label) { return `<label class="lb">${label || 'Anotações'}</label><textarea data-note="${key}" placeholder="Erros, pronúncia, observações…">${esc(R.n[key] || '')}</textarea>`; }
+function noteKey(st) { return st.k === 'q' || st.k === 'retry' ? 'q' + st.i : st.k === 'rq' ? 'r' + st.i : st.k === 'pic' ? 'pic' : st.k === 'read' ? 'read' : st.k === 'watch' ? 'w' : null; }
+function renderNotes() {
+  const el = $('#notes'); if (!el) return; const st = cur(), k = noteKey(st);
+  const lab = st.k === 'read' ? 'Pronúncia e entonação' : st.k === 'pic' ? 'Anotações sobre a descrição' : k ? `Anotações · ${st.t}` : '';
+  el.innerHTML = `<div class="card">${k ? `<label class="lb" style="margin-top:0">${esc(lab)}</label><textarea data-note="${k}" placeholder="Erros, pronúncia, observações…">${esc(R.n[k] || '')}</textarea>` : ''}
+    <label class="lb" ${k ? '' : 'style="margin-top:0"'}>Observações gerais</label><textarea class="g" data-note="geral" placeholder="Entram no fim do feedback">${esc(R.n.geral || '')}</textarea>
+    <div class="tiny">Tudo é salvo automaticamente.</div></div>`;
+  el.querySelectorAll('[data-note]').forEach(t => t.oninput = () => { clearTimeout(t._t); t._t = setTimeout(() => setR('n/' + t.dataset.note, t.value), 500); });
+}
 function navHtml() { return `<div class="navb"><button class="btn sec2" id="bk" ${R.step ? '' : 'disabled'}>Voltar</button><span class="sp"></span><button class="btn" id="nx" ${R.step < STEPS.length - 1 ? '' : 'disabled'}>Próximo</button></div>`; }
 function renderRun() {
-  app.innerHTML = `<div class="wrap"><div class="run"><div id="main"></div><div class="side" id="side"></div></div></div>`;
-  renderMain(); renderSide();
+  app.innerHTML = `<div class="wrap wide"><div class="run"><div class="side" id="side"></div><div id="main"></div><div class="side notesp" id="notes"></div></div></div>`;
+  renderMain(); renderSide(); renderNotes();
 }
 function bindCommon() {
   const bk = $('#bk'), nx = $('#nx');
@@ -463,9 +488,9 @@ function renderMain() {
   const L = E.listening;
   if (st.k === 'welcome') {
     h = `<div class="card"><div class="sec c-p">Início</div>
-      <p>O aluno vê a tela de boas-vindas. Envie o <b>link</b> (ou o <b>código ${R.code}</b>) e comece quando a bolinha ao lado ficar verde.</p>
+      <p>O aluno vê a tela de boas-vindas. Envie o <b>link</b> (ou o <b>código ${R.code}</b>) e comece quando a bolinha à esquerda ficar verde. As anotações ficam na coluna da direita.</p>
       <div class="hint">Durante as perguntas: <b>Certo</b> vale 1, <b>Mais ou menos</b> vale 0,5, <b>Errado</b> vale 0. <b>Pular</b> deixa a pergunta para o final, para uma nova tentativa. "Mostrar a pergunta na tela" não tira ponto, mas fica registrado e aparece no feedback.</div>
-      ${noteHtml('geral', 'Observações gerais (entram no fim do feedback)')}${navHtml()}</div>`;
+      ${navHtml()}</div>`;
   } else if (st.k === 'q' || st.k === 'retry') {
     const key = 'q' + st.i, retry = st.k === 'retry';
     const sel = retry ? R.m2[key] : R.m[key];
@@ -474,7 +499,7 @@ function renderMain() {
       <div class="qbig">${esc(E.perguntas[st.i])}</div>
       <label class="tog"><input type="checkbox" id="show" ${R.h[key] ? 'checked' : ''}> Mostrar a pergunta na tela do aluno (apoio)</label>
       ${marksHtml(sel, !retry)}${retry ? '<div class="tiny">Na nova tentativa não dá para pular: se o aluno não responder, marque Errado.</div>' : ''}
-      ${noteHtml(key)}${navHtml()}</div>`;
+      ${navHtml()}</div>`;
   } else if (st.k === 'pic') {
     const pg = (LIVE.v.v && LIVE.v.v.page) || 0;
     h = `<div class="card"><div class="sec c-pic">Picture</div>
@@ -483,19 +508,19 @@ function renderMain() {
       <div class="thumbs">${E.picture.imgs.map((s, i) => `<img src="${s}" data-pg="${i}" class="${i === pg ? 'on' : ''}" alt="">`).join('')}</div>
       <img class="album" src="${E.picture.imgs[pg]}" alt="">
       <div class="hint" style="margin-top:12px">Esta parte não vale ponto: avalie nos critérios.</div>
-      ${noteHtml('pic', 'Anotações sobre a descrição')}${navHtml()}</div>`;
+      ${navHtml()}</div>`;
   } else if (st.k === 'read') {
     h = `<div class="card"><div class="sec c-read">Reading</div><div class="mut">O aluno lê o texto em voz alta. <b>Clique nas palavras que ele ler errado</b> (clique de novo para desmarcar). Elas entram no feedback.</div>
       <div class="rtext small"><h2>${esc(E.reading.titulo)}</h2>${E.reading.texto.map((p, pi) => { let wi = 0; return `<p>${p.split(/(\s+)/).map(t => { if (!t.trim()) return t; const k = `${pi}-${wi++}`, c = cleanW(t); return c ? `<span class="wd ${R.rw[k] ? 'bad' : ''}" data-wd="${k}" data-c="${esc(c)}">${esc(t)}</span>` : esc(t); }).join('')}</p>`; }).join('')}</div>
       <div class="tiny" id="rwl">${readWords(R).length ? 'Marcadas: ' + esc(readWords(R).join(', ')) : 'Nenhuma palavra marcada.'}</div>
-      ${noteHtml('read', 'Pronúncia e entonação')}${navHtml()}</div>`;
+      ${navHtml()}</div>`;
   } else if (st.k === 'rq') {
     const key = 'r' + st.i, it = E.reading.perguntas[st.i];
     h = `<div class="card"><div class="sec c-read">Reading · Comprehension</div>
       <div class="mut">Pergunta ${st.i + 1} de ${E.reading.perguntas.length}</div>
       <div class="qbig">${esc(it[0])}</div>${it[1] ? `<div class="hint"><b>Resposta esperada:</b> ${esc(it[1])}</div>` : ''}
       <label class="tog"><input type="checkbox" id="show" ${R.h[key] ? 'checked' : ''}> Mostrar a pergunta na tela do aluno (apoio)</label>
-      ${marksHtml(R.m[key], false)}${noteHtml(key)}${navHtml()}</div>`;
+      ${marksHtml(R.m[key], false)}${navHtml()}</div>`;
   } else if (st.k === 'watch') {
     h = `<div class="card"><div class="sec c-w">${esc(L.tipo)} · ${esc(L.titulo)}</div>
       <div class="mut">${esc(L.fonte)}. Coloque o vídeo/áudio para o aluno. Ele clica nas respostas na tela dele; você acompanha aqui.</div>
@@ -503,7 +528,7 @@ function renderMain() {
       <label class="tog"><input type="checkbox" id="vfree" ${LIVE.v.vfree ? 'checked' : ''}> Deixar o aluno controlar o vídeo</label>` : ''}<label class="tog"><input type="checkbox" id="vshow" ${LIVE.v.vid !== false ? 'checked' : ''}> Mostrar o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} na tela do aluno</label>` : `<div class="hint">Esta prova ainda não tem o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} incluído: coloque-o para o aluno pelo seu computador.</div>`}
       <div id="wlive"></div>
       <label class="tog"><input type="checkbox" id="wlock" ${LIVE.v.wlock ? 'checked' : ''}> Travar as respostas do aluno</label>
-      ${noteHtml('w', 'Anotações')}${navHtml()}</div>`;
+      ${navHtml()}</div>`;
   } else if (st.k === 'end') {
     const s = calc(E, R);
     h = `<div class="card"><div class="sec c-p">Encerrar a prova</div>
@@ -544,7 +569,7 @@ function renderMain() {
 function renderMainWatchLive() {
   const vst = $('#vst');
   if (vst) { const x = LIVE.v.vs; const fresh = x && Date.now() - (x.at || 0) < 8000; const mmss = n => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, '0')}`;
-    vst.innerHTML = !fresh ? 'Aguardando a tela do aluno…' : x.e === 1 ? '<b style="color:var(--no)">O vídeo não carregou no player: o aluno vê o player do Drive e controla sozinho.</b>' : x.e === 2 ? 'O navegador do aluno bloqueou o play: peça para ele tocar no botão da tela.' : `${x.p ? 'Tocando' : 'Pausado'} · ${mmss(x.t || 0)}${x.d ? ' de ' + mmss(x.d) : ''}`; }
+    vst.innerHTML = !fresh ? 'Aguardando a tela do aluno…' : x.e === 1 ? '<b style="color:var(--no)">O vídeo não carregou no player: o aluno vê o player do Drive e controla sozinho.</b>' : x.e === 2 ? 'O navegador do aluno bloqueou o play: peça para ele tocar no botão da tela.' : (x.en ? '<b style="color:var(--cw)">O vídeo terminou</b>' : `${x.p ? '<b style="color:var(--cw)">Tocando</b>' : 'Pausado'} · ${mmss(x.t || 0)}${x.d ? ' de ' + mmss(x.d) : ''}`) + (x.hd ? ' · <b style="color:var(--no)">o aluno saiu da página</b>' : '') + (typeof x.q === 'number' ? ` · aluno na pergunta ${x.q + 1}` : '') + (x.d ? `<span class="vbar"><i style="width:${Math.min(100, Math.round((x.en ? x.d : x.t || 0) / x.d * 100))}%"></i></span>` : ''); }
   const el = $('#wlive'); if (!el) return; const L = E.listening;
   el.innerHTML = `<div class="wgrid">${L.itens.map((it, i) => {
     if (it.op) { const a = R.w[i]; const has = a !== undefined && a !== null && a !== ''; return `<div class="wcell ${has ? (+a === it.c ? 'ok' : 'no') : ''}">${i + 1}<b>${has ? L3[+a] : '–'}</b><span class="tiny">gabarito ${L3[it.c]}</span></div>`; }
@@ -577,7 +602,8 @@ function reportHtml() {
     <textarea id="fb" style="min-height:260px">${esc(R.fb || draftFeedback(E, R))}</textarea>
     <div class="row" style="margin-top:8px"><button class="btn sm sec2" id="regen">Gerar o texto de novo</button><span class="tiny">O texto é um rascunho: edite o que quiser.</span></div>
     <div class="navb"><button class="btn sec2" id="bk">Voltar</button><span class="sp"></span>
-      ${R.status === 'aprovado' ? `<button class="btn sec2" id="reab">Reabrir para edição</button>` : `<button class="btn sec2" id="sv">Salvar rascunho</button><button class="btn" id="apr">Aprovar</button>`}</div></div>`;
+      ${R.status === 'aprovado' ? `<button class="btn sec2" id="reab">Reabrir para edição</button>` : `<button class="btn sec2" id="sv">Salvar rascunho</button><button class="btn" id="apr">Aprovar</button>`}</div>
+    ${R.status !== 'andamento' ? `<div class="hint" style="margin:16px 0 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span>${R.status === 'aprovado' ? 'Feedback aprovado.' : 'Prova salva. Você pode revisar e aprovar depois.'}</span><span class="sp"></span><a class="btn" href="#/" style="text-decoration:none">Voltar à lista de alunos</a></div>` : ''}</div>`;
 }
 function bindReport() {
   const fb = $('#fb');
@@ -586,7 +612,7 @@ function bindReport() {
   else fb.oninput = () => { clearTimeout(fb._t); fb._t = setTimeout(save, 600); };
   if (!R.fb) save();
   $('#regen').onclick = () => { if (R.status === 'aprovado') return; if (confirm('Substituir o texto atual por um novo rascunho automático?')) { fb.value = draftFeedback(E, R); save(); } };
-  const sv = $('#sv'); if (sv) sv.onclick = () => { save(); if (R.status === 'andamento') { setR('status', 'rascunho'); setL('v', { k: 'end' }); } toast('Rascunho salvo'); renderSide(); };
+  const sv = $('#sv'); if (sv) sv.onclick = () => { save(); if (R.status === 'andamento') { setR('status', 'rascunho'); setL('v', { k: 'end' }); } toast('Rascunho salvo'); renderMain(); renderSide(); };
   const apr = $('#apr'); if (apr) apr.onclick = () => {
     save(); if (!confirm(`Aprovar o feedback de ${R.aluno.nome}?`)) return;
     if (R.status === 'andamento') setL('v', { k: 'end' });
@@ -658,18 +684,31 @@ function studentRender() {
 /* ---- watching do aluno: player controlado pela professora ---- */
 let VID = null, VIFR = null, vLastN = null, vErr = 0, vTimer = null;
 function stopVideo() { if (VID) { try { VID.pause(); } catch (e) { } } VID = null; VIFR = null; vLastN = null; clearInterval(vTimer); vTimer = null; }
+let WQI = 0;
 function studentWatch(Ex, L) {
-  const Lx = Ex.listening, wa = L.wa || {}, lk = !!L.wlock;
+  const Lx = Ex.listening, wa = L.wa || {}, lk = !!L.wlock, n = Lx.itens.length;
   if (!$('#wqs')) {
-    stopVideo();
-    app.innerHTML = `<div class="st"><div class="card"><div class="sec c-w">${esc(Lx.tipo)}</div><div id="vbox"></div><p style="font-weight:600">${esc(Lx.instrucao)}</p><div id="wqs"></div></div></div>`;
+    stopVideo(); WQI = 0;
+    app.innerHTML = `<div class="st wide"><div class="card"><div class="sec c-w">${esc(Lx.tipo)}</div><p style="font-weight:600;margin-top:0">${esc(Lx.instrucao)}</p><div class="wlay" id="wlay"><div id="vbox"></div><div id="wqs"></div></div></div></div>`;
     setupVideo(Lx);
   }
-  const vb = $('#vbox'); if (vb) vb.style.display = Lx.video && L.vid !== false ? '' : 'none';
-  if (VID) { VID.controls = !!L.vfree; if (L.vid === false) VID.pause(); else applyCmd(L.vc); }
-  $('#wqs').innerHTML = `${Lx.itens.map((it, i) => `<div class="wq"><p>${i + 1}. ${esc(it.q)}</p>${it.op ? it.op.map((o, j) => `<button class="opt ${String(wa[i]) === String(j) ? 'sel' : ''}" data-q="${i}" data-o="${j}" ${lk ? 'disabled' : ''}><b>${L3[j]}</b>${esc(o)}</button>`).join('') : `<textarea data-wt="${i}" ${lk ? 'disabled' : ''}>${esc((L.wt || {})[i] || '')}</textarea>`}</div>`).join('')}
-    ${lk ? '<p class="mut center">Your answers were sent to your teacher.</p>' : ''}`;
-  app.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { if (SL.v.wlock) return; SL.v = setIn(SL.v, 'wa/' + b.dataset.q, +b.dataset.o, false); send('PUT', `po-${myCode}/wa/${b.dataset.q}`, +b.dataset.o); lastSig = ''; studentRender(); });
+  const showV = !!Lx.video && L.vid !== false;
+  const vb = $('#vbox'); if (vb) vb.style.display = showV ? '' : 'none';
+  $('#wlay').classList.toggle('nov', !showV);
+  if (VID) { VID.controls = !!L.vfree; if (!showV) VID.pause(); else applyCmd(L.vc); }
+  WQI = Math.max(0, Math.min(n - 1, WQI));
+  const it = Lx.itens[WQI], i = WQI;
+  const answered = k => { const a = it.op ? wa[k] : (L.wt || {})[k]; return Lx.itens[k].op ? (wa[k] !== undefined && wa[k] !== null && wa[k] !== '') : !!((L.wt || {})[k] || '').trim(); };
+  $('#wqs').innerHTML = `<div class="wq" style="margin:0">
+      <div class="wnav"><button class="btn sm sec2" data-wn="-1" ${i ? '' : 'disabled'} aria-label="Previous">&#8249;</button><span class="qnum">Question ${i + 1} of ${n}</span><button class="btn sm sec2" data-wn="1" ${i < n - 1 ? '' : 'disabled'} aria-label="Next">&#8250;</button></div>
+      <p style="margin-top:12px">${esc(it.q)}</p>
+      ${it.op ? it.op.map((o, j) => `<button class="opt ${String(wa[i]) === String(j) ? 'sel' : ''}" data-q="${i}" data-o="${j}" ${lk ? 'disabled' : ''}><b>${L3[j]}</b>${esc(o)}</button>`).join('') : `<textarea data-wt="${i}" ${lk ? 'disabled' : ''}>${esc((L.wt || {})[i] || '')}</textarea>`}
+      <div class="wdots">${Lx.itens.map((x, k) => `<button data-wj="${k}" class="${answered(k) ? 'ans' : ''} ${k === i ? 'cur' : ''}">${k + 1}</button>`).join('')}</div>
+    </div>${lk ? '<p class="mut center">Your answers were sent to your teacher.</p>' : ''}`;
+  const goQ = k => { WQI = Math.max(0, Math.min(n - 1, k)); lastSig = ''; studentRender(); report(); };
+  app.querySelectorAll('[data-wn]').forEach(b => b.onclick = () => goQ(WQI + +b.dataset.wn));
+  app.querySelectorAll('[data-wj]').forEach(b => b.onclick = () => goQ(+b.dataset.wj));
+  app.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { if (SL.v.wlock) return; SL.v = setIn(SL.v, 'wa/' + b.dataset.q, +b.dataset.o, false); send('PUT', `po-${myCode}/wa/${b.dataset.q}`, +b.dataset.o); lastSig = ''; studentRender(); if (WQI < n - 1) setTimeout(() => goQ(WQI + 1), 350); });
   app.querySelectorAll('[data-wt]').forEach(t => t.oninput = () => { clearTimeout(t._t); t._t = setTimeout(() => { SL.v = setIn(SL.v, 'wt/' + t.dataset.wt, t.value, false); send('PUT', `po-${myCode}/wt/${t.dataset.wt}`, t.value); }, 500); });
 }
 function setupVideo(Lx) {
@@ -680,7 +719,7 @@ function setupVideo(Lx) {
   VID = vb.querySelector('video'); vErr = 0;
   VID.src = src;
   VID.addEventListener('error', () => { vErr = 1; VID = null; vb.innerHTML = embedHtml(Lx.video); report(); });
-  ['play', 'pause', 'seeked', 'loadedmetadata'].forEach(ev => VID && VID.addEventListener(ev, report));
+  ['play', 'pause', 'seeked', 'loadedmetadata', 'ended'].forEach(ev => VID && VID.addEventListener(ev, report));
   $('#vtap').onclick = () => { $('#vtap').style.display = 'none'; vErr = 0; if (VID) VID.play().catch(() => { }); };
   clearInterval(vTimer); vTimer = setInterval(report, 2000); report();
 }
@@ -691,11 +730,12 @@ function applyCmd(vc) {
   else if (vc.cmd === 'pause') VID.pause();
 }
 function report() {
-  const x = { at: Date.now(), e: vErr };
-  if (VID) { x.t = Math.round(VID.currentTime || 0); x.p = !VID.paused; if (isFinite(VID.duration)) x.d = Math.round(VID.duration); }
+  const x = { at: Date.now(), e: vErr, q: WQI, hd: document.hidden ? 1 : 0 };
+  if (VID) { x.t = Math.round(VID.currentTime || 0); x.p = !VID.paused && !VID.ended; x.en = VID.ended ? 1 : 0; if (isFinite(VID.duration)) x.d = Math.round(VID.duration); }
   send('PUT', `po-${myCode}/vs`, x);
 }
 
+document.addEventListener('visibilitychange', () => { if (STUDENT && myCode && document.querySelector('#wqs')) report(); });
 route();
 </script>
 </body>
