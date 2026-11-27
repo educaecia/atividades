@@ -435,7 +435,7 @@ function go(i) {
   setR('step', i);
   const st = cur();
   if (R.status === 'andamento' && st.k !== 'end') setL('v', studentViewFor(st));
-  codeOpen = i === 0;
+  codeOpen = i === 0; scrollToCur = true;
   renderRun(); window.scrollTo(0, 0);
 }
 function stepMark(st) {
@@ -447,8 +447,10 @@ function stepMark(st) {
   if (st.k === 'report') return R.status === 'aprovado' ? 'ok' : R.status === 'rascunho' ? 'vis' : '';
   return '';
 }
+let stepsScroll = null, scrollToCur = true;
 function renderSide() {
   const el = $('#side'); if (!el) return;
+  const oldSt = el.querySelector('.steps'); if (oldSt) stepsScroll = oldSt.scrollTop;
   const here = LIVE.v.here && (Date.now() - LIVE.v.here < 25000);
   const link = `${BASE}?c=${R.code}`;
   const s = calc(E, R);
@@ -465,6 +467,12 @@ function renderSide() {
   const dt = el.querySelector('details.cod'); if (dt) dt.ontoggle = () => { codeOpen = dt.open; };
   const c = $('#cpl'); if (c) c.onclick = () => navigator.clipboard.writeText(link).then(() => toast('Link copiado'));
   el.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(+b.dataset.go));
+  const stl = el.querySelector('.steps');
+  if (stl) {
+    if (scrollToCur) { const on = stl.querySelector('button.on'); if (on) stl.scrollTop = Math.max(0, on.offsetTop - stl.offsetTop - stl.clientHeight / 2 + on.offsetHeight / 2); scrollToCur = false; }
+    else if (stepsScroll !== null) stl.scrollTop = stepsScroll;
+    stl.onscroll = () => { stepsScroll = stl.scrollTop; };
+  }
 }
 function marksHtml(sel, skip) {
   const b = (k, t, sub) => `<button class="mk ${k} ${sel === k ? 'sel' : ''}" data-mk="${k}">${t}<small>${sub}</small></button>`;
