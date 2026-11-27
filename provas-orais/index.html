@@ -284,7 +284,7 @@ function loginView() {
   const go = () => {
     if (!$('#pf').value) return $('#er').textContent = 'Escolha o seu nome.';
     if ($('#pw').value.trim() !== SENHA) return $('#er').textContent = 'Senha incorreta.';
-    sessionStorage.setItem('po_prof', $('#pf').value); location.hash = '#/'; route();
+    sessionStorage.setItem('po_prof', $('#pf').value); if (location.hash === '#/') route(); else location.hash = '#/';
   };
   $('#go').onclick = go; $('#pw').onkeydown = e => { if (e.key === 'Enter') go(); };
 }
@@ -322,14 +322,20 @@ async function home() {
   app.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { location.hash = '#/p/' + encodeURIComponent(rid(E, b.dataset.open)); });
   $('#doc').onclick = () => classDoc(E, true); $('#cp').onclick = () => classDoc(E, false);
 }
-function startExam(E, alunoId) {
+async function startExam(E, alunoId) {
   const nome = E.alunos.find(a => a[0] === alunoId)[1];
   if (!confirm(`Iniciar a prova oral de ${nome}?`)) return;
   const id = rid(E, alunoId), code = newCode();
   const R = { exam: E.id, aluno: { id: alunoId, nome }, prof: me(), data: new Date().toISOString(), code, status: 'andamento', step: 0, m: {}, m2: {}, h: {}, n: {}, c: {}, w: {} };
-  send('PUT', `${ROOT}/r/${id}`, R);
-  send('PUT', `po-${code}`, { exam: E.id, aluno: nome.split(' ')[0], v: { k: 'welcome' }, wa: {}, wlock: false });
-  ALL[id] = R; location.hash = '#/p/' + encodeURIComponent(id);
+  app.querySelectorAll('[data-start],[data-open]').forEach(b => b.disabled = true);
+  toast('Criando a prova…');
+  ALL[id] = R;
+  try {
+    const a = await fetch(url(`${ROOT}/r/${id}`), { method: 'PUT', body: JSON.stringify(R) });
+    const b = await fetch(url(`po-${code}`), { method: 'PUT', body: JSON.stringify({ exam: E.id, aluno: nome.split(' ')[0], v: { k: 'welcome' }, wa: {}, wlock: false }) });
+    if (!a.ok || !b.ok) throw 0;
+  } catch (e) { alert('Não consegui salvar a prova na internet. Verifique a conexão e tente de novo.'); delete ALL[id]; return home(); }
+  location.hash = '#/p/' + encodeURIComponent(id);
 }
 function classDoc(E, download) {
   const items = E.alunos.map(([id]) => ALL[rid(E, id)]).filter(r => r && r.status === 'aprovado');
@@ -365,7 +371,8 @@ function setL(path, val) { LIVE.v = setIn(LIVE.v || {}, path, val, false); send(
 async function runner(id) {
   app.innerHTML = `<div class="wrap"><p class="mut">Carregando…</p></div>`;
   RID = id;
-  try { R = ALL[id] && ALL[id].upd && (Date.now() - ALL[id].upd < 3000) ? ALL[id] : await get(`${ROOT}/r/${id}`); } catch (e) { R = ALL[id]; }
+  R = null;
+  for (let k = 0; k < 4 && !R; k++) { try { R = await get(`${ROOT}/r/${id}`); } catch (e) { R = null; } if (!R) R = ALL[id]; if (!R) await new Promise(r => setTimeout(r, 1000)); }
   if (!R) { app.innerHTML = `<div class="wrap"><div class="card">Prova não encontrada. <a href="#/">Voltar</a></div></div>`; return; }
   E = exam(R.exam);
   ['m', 'm2', 'h', 'n', 'c', 'w', 'rw'].forEach(k => R[k] = R[k] || {});
