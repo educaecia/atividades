@@ -94,6 +94,8 @@ table.t td{padding:9px 8px;border-bottom:1px solid #f0ebf6;vertical-align:middle
 .wq textarea{font-size:16px}
 .endh{font-size:40px!important}
 .wd{cursor:pointer;border-radius:5px;padding:0 1px}.wd:hover{background:var(--pl)}.wd.bad{background:var(--nol);color:var(--no);text-decoration:underline wavy}
+.vtap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(42,26,74,.55);z-index:2}.vtap button{font-size:20px}
+.vctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#f1f7ea;border-radius:12px;padding:10px 12px;margin:0 0 10px}
 .vid{position:relative;width:100%;padding-top:56.25%;border-radius:14px;overflow:hidden;background:#000;margin:0 0 14px}.vid iframe,.vid video{position:absolute;inset:0;width:100%;height:100%;border:0}
 </style>
 </head>
@@ -153,6 +155,12 @@ function embedHtml(u) {
   if (m) return `<div class="vid"><iframe src="https://drive.google.com/file/d/${m[1]}/preview" allow="autoplay; fullscreen" allowfullscreen></iframe></div>`;
   if (/\.(mp3|m4a|wav|ogg)(\?|$)/i.test(u)) return `<audio controls src="${esc(u)}" style="width:100%;margin:0 0 14px"></audio>`;
   return `<div class="vid"><video controls src="${esc(u)}"></video></div>`;
+}
+function videoSrc(u) {
+  if (!u) return null;
+  const m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/); if (m) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+  if (/\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(u)) return u;
+  return null; // YouTube: sem controle pela professora
 }
 const cleanW = w => w.replace(/^[^A-Za-z0-9']+|[^A-Za-z0-9']+$/g, '');
 function readWords(R) { const rw = R.rw || {}; return Object.keys(rw).sort((a, b) => { const [p1, w1] = a.split('-').map(Number), [p2, w2] = b.split('-').map(Number); return p1 - p2 || w1 - w2; }).map(k => rw[k]).filter((w, i, a) => a.indexOf(w) === i); }
@@ -357,8 +365,7 @@ function setL(path, val) { LIVE.v = setIn(LIVE.v || {}, path, val, false); send(
 async function runner(id) {
   app.innerHTML = `<div class="wrap"><p class="mut">Carregando…</p></div>`;
   RID = id;
-  try { R = await get(`${ROOT}/r/${id}`); } catch (e) { R = null; }
-  if (!R) R = ALL[id];
+  try { R = ALL[id] && ALL[id].upd && (Date.now() - ALL[id].upd < 3000) ? ALL[id] : await get(`${ROOT}/r/${id}`); } catch (e) { R = ALL[id]; }
   if (!R) { app.innerHTML = `<div class="wrap"><div class="card">Prova não encontrada. <a href="#/">Voltar</a></div></div>`; return; }
   E = exam(R.exam);
   ['m', 'm2', 'h', 'n', 'c', 'w', 'rw'].forEach(k => R[k] = R[k] || {});
@@ -484,7 +491,8 @@ function renderMain() {
   } else if (st.k === 'watch') {
     h = `<div class="card"><div class="sec c-w">${esc(L.tipo)} · ${esc(L.titulo)}</div>
       <div class="mut">${esc(L.fonte)}. Coloque o vídeo/áudio para o aluno. Ele clica nas respostas na tela dele; você acompanha aqui.</div>
-      ${L.video ? `<label class="tog"><input type="checkbox" id="vshow" ${LIVE.v.vid !== false ? 'checked' : ''}> Mostrar o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} na tela do aluno</label>` : `<div class="hint">Esta prova ainda não tem o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} incluído: coloque-o para o aluno pelo seu computador.</div>`}
+      ${L.video ? `${videoSrc(L.video) ? `<div class="vctl"><b style="color:var(--cw)">Vídeo</b><button class="btn sm" data-vc="play">Play</button><button class="btn sm sec2" data-vc="pause">Pause</button><button class="btn sm sec2" data-vc="back">Voltar 10 s</button><button class="btn sm sec2" data-vc="restart">Do início</button><span class="tiny" id="vst"></span></div>
+      <label class="tog"><input type="checkbox" id="vfree" ${LIVE.v.vfree ? 'checked' : ''}> Deixar o aluno controlar o vídeo</label>` : ''}<label class="tog"><input type="checkbox" id="vshow" ${LIVE.v.vid !== false ? 'checked' : ''}> Mostrar o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} na tela do aluno</label>` : `<div class="hint">Esta prova ainda não tem o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} incluído: coloque-o para o aluno pelo seu computador.</div>`}
       <div id="wlive"></div>
       <label class="tog"><input type="checkbox" id="wlock" ${LIVE.v.wlock ? 'checked' : ''}> Travar as respostas do aluno</label>
       ${noteHtml('w', 'Anotações')}${navHtml()}</div>`;
@@ -514,12 +522,21 @@ function renderMain() {
   el.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { setR('c/' + b.dataset.c, +b.dataset.v); renderMain(); renderSide(); });
   el.querySelectorAll('[data-wd]').forEach(w => w.onclick = () => { const k = w.dataset.wd; if (R.rw[k]) { setR('rw/' + k, null); w.classList.remove('bad'); } else { setR('rw/' + k, w.dataset.c); w.classList.add('bad'); } const l = readWords(R); $('#rwl').textContent = l.length ? 'Marcadas: ' + l.join(', ') : 'Nenhuma palavra marcada.'; renderSide(); });
   const vs = $('#vshow'); if (vs) vs.onchange = () => setL('vid', vs.checked);
+  const vf = $('#vfree'); if (vf) vf.onchange = () => setL('vfree', vf.checked);
+  el.querySelectorAll('[data-vc]').forEach(b => b.onclick = () => {
+    const t = ((LIVE.v.vs || {}).t) || 0, c = b.dataset.vc;
+    const cmd = c === 'play' ? { cmd: 'play' } : c === 'pause' ? { cmd: 'pause' } : c === 'restart' ? { cmd: 'play', t: 0 } : { cmd: 'seek', t: Math.max(0, t - 10) };
+    cmd.n = Date.now(); setL('vc', cmd);
+  });
   const wl = $('#wlock'); if (wl) wl.onchange = () => setL('wlock', wl.checked);
   const fim = $('#fim'); if (fim) fim.onclick = () => { setL('v', { k: 'end' }); setR('status', 'rascunho'); setR('fim', new Date().toISOString()); go(R.step + 1); };
   if (st.k === 'watch') renderMainWatchLive();
   if (st.k === 'report') bindReport();
 }
 function renderMainWatchLive() {
+  const vst = $('#vst');
+  if (vst) { const x = LIVE.v.vs; const fresh = x && Date.now() - (x.at || 0) < 8000; const mmss = n => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, '0')}`;
+    vst.innerHTML = !fresh ? 'Aguardando a tela do aluno…' : x.e === 1 ? '<b style="color:var(--no)">O vídeo não carregou no player: o aluno vê o player do Drive e controla sozinho.</b>' : x.e === 2 ? 'O navegador do aluno bloqueou o play: peça para ele tocar no botão da tela.' : `${x.p ? 'Tocando' : 'Pausado'} · ${mmss(x.t || 0)}${x.d ? ' de ' + mmss(x.d) : ''}`; }
   const el = $('#wlive'); if (!el) return; const L = E.listening;
   el.innerHTML = `<div class="wgrid">${L.itens.map((it, i) => {
     if (it.op) { const a = R.w[i]; const has = a !== undefined && a !== null && a !== ''; return `<div class="wcell ${has ? (+a === it.c ? 'ok' : 'no') : ''}">${i + 1}<b>${has ? L3[+a] : '–'}</b><span class="tiny">gabarito ${L3[it.c]}</span></div>`; }
@@ -593,7 +610,7 @@ function studentRender() {
   if (!L || !L.exam) { app.innerHTML = `<div class="st narrow"><div class="card center"><h2>Code not found</h2><p class="mut">Check the code with your teacher.</p><a class="btn" href="${BASE}?aluno=1" style="text-decoration:none;display:inline-block">Try again</a></div></div>`; return; }
   const Ex = exam(L.exam); if (!Ex) return;
   const v = L.v || { k: 'welcome' };
-  const sig = JSON.stringify([v, L.wa, L.wlock, L.vid, L.wt && v.k === 'watch' ? 1 : 0]);
+  const sig = JSON.stringify([v, L.wa, L.wlock, L.vid, L.vc, L.vfree, L.wt && v.k === 'watch' ? 1 : 0]);
   if (sig === lastSig) return; lastSig = sig;
   const active = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.wt;
   if (active !== undefined && v.k === 'watch') return; // não redesenhar enquanto o aluno digita
@@ -614,17 +631,61 @@ function studentRender() {
     h = `<div class="card"><div class="sec c-read">Reading</div>${v.k === 'read' ? '<p class="mut">Read the text aloud.</p>' : ''}${q}
       <div class="rtext ${v.k === 'rq' ? 'small' : ''}"><h2>${esc(Ex.reading.titulo)}</h2>${Ex.reading.texto.map(p => `<p>${esc(p)}</p>`).join('')}</div></div>`;
   } else if (v.k === 'watch') {
+    return studentWatch(Ex, L);
+  } else if (v.k === 'watch_old') {
     const Lx = Ex.listening, wa = L.wa || {}, lk = !!L.wlock;
-    h = `<div class="card"><div class="sec c-w">${esc(Lx.tipo)}</div>${Lx.video && L.vid !== false ? embedHtml(Lx.video) : ''}<p style="font-weight:600">${esc(Lx.instrucao)}</p>
+    h = `<div class="card"><div class="sec c-w">${esc(Lx.tipo)}</div><p style="font-weight:600">${esc(Lx.instrucao)}</p>
       ${Lx.itens.map((it, i) => `<div class="wq"><p>${i + 1}. ${esc(it.q)}</p>${it.op ? it.op.map((o, j) => `<button class="opt ${String(wa[i]) === String(j) ? 'sel' : ''}" data-q="${i}" data-o="${j}" ${lk ? 'disabled' : ''}><b>${L3[j]}</b>${esc(o)}</button>`).join('') : `<textarea data-wt="${i}" ${lk ? 'disabled' : ''}>${esc((L.wt || {})[i] || '')}</textarea>`}</div>`).join('')}
       ${lk ? '<p class="mut center">Your answers were sent to your teacher.</p>' : ''}</div>`;
   } else if (v.k === 'end') {
     h = `<div class="card hero"><h1 class="endh">You did it!</h1><p>Thank you for your hard work this semester. Your teacher is very proud of you.</p><div class="luck">Have a great vacation!</div><p style="margin-top:18px">See you next semester!</p></div>`;
   }
+  stopVideo();
   app.innerHTML = `<div class="st">${h}</div>`;
   app.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { if (SL.v.wlock) return; SL.v = setIn(SL.v, 'wa/' + b.dataset.q, +b.dataset.o, false); send('PUT', `po-${myCode}/wa/${b.dataset.q}`, +b.dataset.o); studentRender(); });
   app.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { const np = Math.max(0, (v.page || 0) + +b.dataset.p); SL.v = setIn(SL.v, 'v/page', np, false); send('PUT', `po-${myCode}/v/page`, np); studentRender(); });
   app.querySelectorAll('[data-wt]').forEach(t => t.oninput = () => { clearTimeout(t._t); t._t = setTimeout(() => { SL.v = setIn(SL.v, 'wt/' + t.dataset.wt, t.value, false); send('PUT', `po-${myCode}/wt/${t.dataset.wt}`, t.value); }, 500); });
+}
+
+/* ---- watching do aluno: player controlado pela professora ---- */
+let VID = null, VIFR = null, vLastN = null, vErr = 0, vTimer = null;
+function stopVideo() { if (VID) { try { VID.pause(); } catch (e) { } } VID = null; VIFR = null; vLastN = null; clearInterval(vTimer); vTimer = null; }
+function studentWatch(Ex, L) {
+  const Lx = Ex.listening, wa = L.wa || {}, lk = !!L.wlock;
+  if (!$('#wqs')) {
+    stopVideo();
+    app.innerHTML = `<div class="st"><div class="card"><div class="sec c-w">${esc(Lx.tipo)}</div><div id="vbox"></div><p style="font-weight:600">${esc(Lx.instrucao)}</p><div id="wqs"></div></div></div>`;
+    setupVideo(Lx);
+  }
+  const vb = $('#vbox'); if (vb) vb.style.display = Lx.video && L.vid !== false ? '' : 'none';
+  if (VID) { VID.controls = !!L.vfree; if (L.vid === false) VID.pause(); else applyCmd(L.vc); }
+  $('#wqs').innerHTML = `${Lx.itens.map((it, i) => `<div class="wq"><p>${i + 1}. ${esc(it.q)}</p>${it.op ? it.op.map((o, j) => `<button class="opt ${String(wa[i]) === String(j) ? 'sel' : ''}" data-q="${i}" data-o="${j}" ${lk ? 'disabled' : ''}><b>${L3[j]}</b>${esc(o)}</button>`).join('') : `<textarea data-wt="${i}" ${lk ? 'disabled' : ''}>${esc((L.wt || {})[i] || '')}</textarea>`}</div>`).join('')}
+    ${lk ? '<p class="mut center">Your answers were sent to your teacher.</p>' : ''}`;
+  app.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { if (SL.v.wlock) return; SL.v = setIn(SL.v, 'wa/' + b.dataset.q, +b.dataset.o, false); send('PUT', `po-${myCode}/wa/${b.dataset.q}`, +b.dataset.o); lastSig = ''; studentRender(); });
+  app.querySelectorAll('[data-wt]').forEach(t => t.oninput = () => { clearTimeout(t._t); t._t = setTimeout(() => { SL.v = setIn(SL.v, 'wt/' + t.dataset.wt, t.value, false); send('PUT', `po-${myCode}/wt/${t.dataset.wt}`, t.value); }, 500); });
+}
+function setupVideo(Lx) {
+  const vb = $('#vbox'); if (!vb || !Lx.video) return;
+  const src = videoSrc(Lx.video);
+  if (!src) { vb.innerHTML = embedHtml(Lx.video); vErr = 0; return; }
+  vb.innerHTML = `<div class="vid"><video playsinline preload="auto"></video><div class="vtap" id="vtap" style="display:none"><button class="btn">Tap to start the video</button></div></div>`;
+  VID = vb.querySelector('video'); vErr = 0;
+  VID.src = src;
+  VID.addEventListener('error', () => { vErr = 1; VID = null; vb.innerHTML = embedHtml(Lx.video); report(); });
+  ['play', 'pause', 'seeked', 'loadedmetadata'].forEach(ev => VID && VID.addEventListener(ev, report));
+  $('#vtap').onclick = () => { $('#vtap').style.display = 'none'; vErr = 0; if (VID) VID.play().catch(() => { }); };
+  clearInterval(vTimer); vTimer = setInterval(report, 2000); report();
+}
+function applyCmd(vc) {
+  if (!VID || !vc || vc.n === vLastN) return; vLastN = vc.n;
+  if (typeof vc.t === 'number') { try { VID.currentTime = vc.t; } catch (e) { } }
+  if (vc.cmd === 'play') VID.play().then(() => { vErr = 0; }).catch(() => { vErr = 2; const tp = $('#vtap'); if (tp) tp.style.display = 'flex'; report(); });
+  else if (vc.cmd === 'pause') VID.pause();
+}
+function report() {
+  const x = { at: Date.now(), e: vErr };
+  if (VID) { x.t = Math.round(VID.currentTime || 0); x.p = !VID.paused; if (isFinite(VID.duration)) x.d = Math.round(VID.duration); }
+  send('PUT', `po-${myCode}/vs`, x);
 }
 
 route();
