@@ -110,6 +110,7 @@ details.cod summary::-webkit-details-marker{display:none}details.cod summary:aft
 .wd{cursor:pointer;border-radius:5px;padding:0 1px}.wd:hover{background:var(--pl)}.wd.bad{background:var(--nol);color:var(--no);text-decoration:underline wavy}
 .vtap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(42,26,74,.55);z-index:2}.vtap button{font-size:20px}
 .vctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#f1f7ea;border-radius:12px;padding:10px 12px;margin:0 0 10px}
+.aud{display:flex;align-items:center;gap:14px;background:#f1f7ea;border-radius:16px;padding:18px 20px;margin:0 0 14px}.aud .ic{width:46px;height:46px;border-radius:50%;background:var(--cw);flex:none;display:flex;align-items:center;justify-content:center}.aud .ic:before{content:'';border-left:15px solid #fff;border-top:9px solid transparent;border-bottom:9px solid transparent;margin-left:4px}.aud.on .ic:before{border:0;width:14px;height:16px;border-left:5px solid #fff;border-right:5px solid #fff;margin:0;box-sizing:border-box}.aud b{display:block}.aud audio{width:100%}
 .vid{position:relative;width:100%;padding-top:56.25%;border-radius:14px;overflow:hidden;background:#000;margin:0 0 14px}.vid iframe,.vid video{position:absolute;inset:0;width:100%;height:100%;border:0}
 </style>
 </head>
@@ -122,6 +123,7 @@ details.cod summary::-webkit-details-marker{display:none}details.cod summary:aft
 <!-- Provas carregadas: para incluir uma nova prova, acrescente uma linha aqui -->
 <script>window.EXAMS = [];</script>
 <script src="provas/kids8-2026-2.js"></script>
+<script src="provas/kids7-2026-2.js"></script>
 
 <script>
 /* ================= CONFIG ================= */
@@ -544,8 +546,8 @@ function renderMain() {
   } else if (st.k === 'watch') {
     h = `<div class="card"><div class="sec c-w">${esc(L.tipo)} · ${esc(L.titulo)}</div>
       <div class="mut">${esc(L.fonte)}. Coloque o vídeo/áudio para o aluno. Ele clica nas respostas na tela dele; você acompanha aqui.</div>
-      ${L.video ? `${videoSrc(L.video) ? `<div class="vctl"><b style="color:var(--cw)">Vídeo</b><button class="btn sm" data-vc="play">Play</button><button class="btn sm sec2" data-vc="pause">Pause</button><button class="btn sm sec2" data-vc="back">Voltar 10 s</button><button class="btn sm sec2" data-vc="restart">Do início</button><span class="tiny" id="vst"></span></div>
-      <label class="tog"><input type="checkbox" id="vfree" ${LIVE.v.vfree ? 'checked' : ''}> Deixar o aluno controlar o vídeo</label>` : ''}<label class="tog"><input type="checkbox" id="vshow" ${LIVE.v.vid !== false ? 'checked' : ''}> Mostrar o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} na tela do aluno</label>` : `<div class="hint">Esta prova ainda não tem o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} incluído: coloque-o para o aluno pelo seu computador.</div>`}
+      ${L.video ? `${videoSrc(L.video) ? `<div class="vctl"><b style="color:var(--cw)">${L.audio ? 'Áudio' : 'Vídeo'}</b><button class="btn sm" data-vc="play">Play</button><button class="btn sm sec2" data-vc="pause">Pause</button><button class="btn sm sec2" data-vc="back">Voltar 10 s</button><button class="btn sm sec2" data-vc="restart">Do início</button><span class="tiny" id="vst"></span></div>
+      <label class="tog"><input type="checkbox" id="vfree" ${LIVE.v.vfree ? 'checked' : ''}> Deixar o aluno controlar o ${L.audio ? 'áudio' : 'vídeo'}</label>` : ''}<label class="tog"><input type="checkbox" id="vshow" ${LIVE.v.vid !== false ? 'checked' : ''}> Mostrar o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} na tela do aluno</label>` : `<div class="hint">Esta prova ainda não tem o ${L.tipo === 'Listening' ? 'áudio' : 'vídeo'} incluído: coloque-o para o aluno pelo seu computador.</div>`}
       <div id="wlive"></div>
       <label class="tog"><input type="checkbox" id="wlock" ${LIVE.v.wlock ? 'checked' : ''}> Travar as respostas do aluno</label>
       ${navHtml()}</div>`;
@@ -747,12 +749,18 @@ function setupVideo(Lx) {
   const vb = $('#vbox'); if (!vb || !Lx.video) return;
   const src = videoSrc(Lx.video);
   if (!src) { vb.innerHTML = embedHtml(Lx.video); vErr = 0; return; }
-  vb.innerHTML = `<div class="vid"><video playsinline preload="auto"></video><div class="vtap" id="vtap" style="display:none"><button class="btn">Tap to start the video</button></div></div>`;
-  VID = vb.querySelector('video'); vErr = 0;
+  if (Lx.audio) {
+    vb.innerHTML = `<div class="aud" id="aud"><span class="ic"></span><div style="flex:1"><b>Audio</b><span class="mut" id="aust">Your teacher will play the audio.</span><audio preload="auto"></audio></div></div><div id="vtap" style="display:none;margin:-4px 0 14px"><button class="btn">Tap to start the audio</button></div>`;
+    VID = vb.querySelector('audio');
+  } else {
+    vb.innerHTML = `<div class="vid"><video playsinline preload="auto"></video><div class="vtap" id="vtap" style="display:none"><button class="btn">Tap to start the video</button></div></div>`;
+    VID = vb.querySelector('video');
+  }
+  vErr = 0;
   VID.src = src;
   VID.addEventListener('error', () => { vErr = 1; VID = null; vb.innerHTML = embedHtml(Lx.video); report(); });
   ['play', 'pause', 'seeked', 'loadedmetadata', 'ended'].forEach(ev => VID && VID.addEventListener(ev, report));
-  $('#vtap').onclick = () => { $('#vtap').style.display = 'none'; vErr = 0; if (VID) VID.play().catch(() => { }); };
+  $('#vtap').onclick = () => { $('#vtap').style.display = 'none'; vErr = 0; vErr = 0; if (VID) VID.play().catch(() => { }); };
   clearInterval(vTimer); vTimer = setInterval(report, 2000); report();
 }
 function applyCmd(vc) {
@@ -765,6 +773,8 @@ function report() {
   const x = { at: Date.now(), e: vErr, q: WQI, hd: document.hidden ? 1 : 0 };
   if (VID) { x.t = Math.round(VID.currentTime || 0); x.p = !VID.paused && !VID.ended; x.en = VID.ended ? 1 : 0; if (isFinite(VID.duration)) x.d = Math.round(VID.duration); }
   send('PUT', `po-${myCode}/vs`, x);
+  const au = $('#aud'), st = $('#aust');
+  if (au && st && VID) { au.classList.toggle('on', !!x.p); st.textContent = x.en ? 'The audio has finished.' : x.p ? `Playing… ${mmss(x.t || 0)}${x.d ? ' / ' + mmss(x.d) : ''}` : (x.t ? `Paused · ${mmss(x.t)}${x.d ? ' / ' + mmss(x.d) : ''}` : 'Your teacher will play the audio.'); }
 }
 
 document.addEventListener('visibilitychange', () => { if (STUDENT && myCode && document.querySelector('#wqs')) report(); });
